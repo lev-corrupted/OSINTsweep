@@ -1,0 +1,69 @@
+[
+  {
+    "name": "github",
+    "host": "github.com",
+    "method": "POST",
+    "url": "https://github.com/password_reset",
+    "form_data": {"login": "{email}"},
+    "registered_when": {"contains": "If we recognize this email"},
+    "not_registered_when": {"contains": "We could not find your account"},
+    "rate_limit_per_min": 4,
+    "modes_allowed": ["selfcheck", "pentest"]
+  },
+  {
+    "name": "instagram",
+    "host": "i.instagram.com",
+    "method": "POST",
+    "url": "https://www.instagram.com/accounts/account_recovery_send_ajax/",
+    "form_data": {"email_or_username": "{email}", "recaptcha_challenge_field": ""},
+    "headers": {"X-CSRFToken": "missing", "Referer": "https://www.instagram.com/accounts/password/reset/"},
+    "registered_when": {"contains": "obfuscated_email"},
+    "not_registered_when": {"contains": "No users found"},
+    "rate_limit_per_min": 3,
+    "modes_allowed": ["selfcheck", "pentest"]
+  },
+  {
+    "name": "spotify",
+    "host": "accounts.spotify.com",
+    "method": "POST",
+    "url": "https://accounts.spotify.com/password-reset/send",
+    "form_data": {"emailOrUsername": "{email}"},
+    "registered_when": {"contains": "Reset email sent"},
+    "not_registered_when": {"contains": "Couldn't find that account"},
+    "rate_limit_per_min": 4,
+    "modes_allowed": ["selfcheck", "pentest"]
+  },
+  {
+    "name": "twitter",
+    "host": "api.twitter.com",
+    "method": "POST",
+    "url": "https://api.twitter.com/i/users/email_available.json",
+    "form_data": {"email": "{email}"},
+    "registered_when": {"contains": "\"taken\":true"},
+    "not_registered_when": {"contains": "\"taken\":false"},
+    "rate_limit_per_min": 4,
+    "modes_allowed": ["selfcheck", "pentest"]
+  },
+  {
+    "name": "gitlab",
+    "host": "gitlab.com",
+    "method": "POST",
+    "url": "https://gitlab.com/users/password",
+    "form_data": {"user[email]": "{email}"},
+    "registered_when": {"contains": "If your email address exists in our database"},
+    "not_registered_when": {"contains": "Email not found"},
+    "rate_limit_per_min": 4,
+    "modes_allowed": ["selfcheck", "pentest"]
+  },
+  {
+    "name": "pinterest",
+    "host": "www.pinterest.com",
+    "method": "POST",
+    "url": "https://www.pinterest.com/_ngjs/resource/EmailExistsResource/get/",
+    "form_data": {"source_url": "/", "data": "{\"options\":{\"email\":\"{email}\"}}"},
+    "registered_when": {"contains": "\"data\":true"},
+    "not_registered_when": {"contains": "\"data\":false"},
+    "rate_limit_per_min": 4,
+    "modes_allowed": ["selfcheck", "pentest"]
+  }
+]
