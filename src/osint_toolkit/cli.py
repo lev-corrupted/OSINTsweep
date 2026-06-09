@@ -13,6 +13,7 @@ from rich.console import Console
 
 from osint_toolkit.core import audit
 from osint_toolkit.core.cache import Cache
+from osint_toolkit.core.calibration import CalibrationStore, calibrate_modules
 from osint_toolkit.core.correlator import derive_targets
 from osint_toolkit.core.dispatcher import Dispatcher
 from osint_toolkit.core.models import Report, Target, TargetKind
@@ -68,19 +69,27 @@ def _resolve_owned(email: str) -> bool:
     return any(line.strip().lower() == email.lower() for line in p.read_text().splitlines())
 
 
-async def _run(target: Target, mode: str) -> Report:
+async def _run(target: Target, mode: str, strict: bool = False) -> Report:
     cache = Cache(
         path=Path(os.environ.get("OSINT_CACHE_PATH", "osint_cache.db")),
         ttl_hours=int(os.environ.get("OSINT_CACHE_TTL_HOURS", "24")),
     )
     await cache.init()
     modules = _modules_for(target.kind, mode)
+    calibration = CalibrationStore()
+    if not calibration.exists() and target.kind == TargetKind.USERNAME:
+        console.print(
+            "[yellow]⚠ no calibration data found.[/yellow] Run `osint calibrate` once "
+            "to fingerprint which sources false-positive. Continuing without confidence demotion."
+        )
     dispatcher = Dispatcher(
         modules=modules,
         mode=mode,
         cache=cache,
         global_timeout_s=float(os.environ.get("OSINT_GLOBAL_TIMEOUT_S", "10")),
         per_host_concurrency=int(os.environ.get("OSINT_PER_HOST_CONCURRENCY", "4")),
+        calibration=calibration,
+        strict=strict,
     )
     return await dispatcher.run(target)
 
@@ -125,15 +134,15 @@ def _maybe_audit(report: Report, mode: str) -> None:
         console.print(f"[dim]audit log → {path}[/dim]")
 
 
-async def _run_with_correlation(target: Target, mode: str, auto_correlate: bool) -> list[Report]:
-    primary = await _run(target, mode)
+async def _run_with_correlation(target: Target, mode: str, auto_correlate: bool, strict: bool) -> list[Report]:
+    primary = await _run(target, mode, strict=strict)
     reports = [primary]
     if not auto_correlate:
         return reports
     for derived in derive_targets(primary):
         if derived.kind != target.kind:
             console.print(f"[dim]↳ correlated: {derived.kind.value} = {derived.value}[/dim]")
-            sub = await _run(derived, mode)
+            sub = await _run(derived, mode, strict=strict)
             reports.append(sub)
     return reports
 
@@ -144,9 +153,10 @@ def _common(
     output: Output,
     out_file: Path | None,
     auto_correlate: bool,
+    strict: bool = False,
 ) -> None:
     _confirm_or_exit(target, mode.value)
-    reports = asyncio.run(_run_with_correlation(target, mode.value, auto_correlate))
+    reports = asyncio.run(_run_with_correlation(target, mode.value, auto_correlate, strict))
     for r in reports:
         _emit(r, output, out_file)
         _maybe_audit(r, mode.value)
@@ -174,10 +184,61 @@ def username(
     output: Annotated[Output, typer.Option("--output", "-o")] = Output.table,
     out_file: Annotated[Path | None, typer.Option("--out")] = None,
     auto_correlate: Annotated[bool, typer.Option("--auto-correlate/--no-auto-correlate")] = False,
+    strict: Annotated[bool, typer.Option("--strict", help="hide sources known to false-positive")] = False,
 ) -> None:
-    """Sherlock-style enumeration across 70+ platforms."""
+    """Sherlock-style enumeration across 80+ platforms."""
     t = Target(kind=TargetKind.USERNAME, value=target)
-    _common(t, mode, output, out_file, auto_correlate)
+    _common(t, mode, output, out_file, auto_correlate, strict=strict)
+
+
+@app.command()
+def calibrate(
+    refresh: Annotated[bool, typer.Option("--refresh", "-r", help="re-run even if calibration is fresh")] = False,
+) -> None:
+    """Calibrate every username source against an impossible handle to detect false-positives.
+
+    Stored at ~/.osint-toolkit/calibration.json. Override path via OSINT_CALIBRATION_PATH.
+    """
+    store = CalibrationStore()
+    if store.exists() and not refresh and store.age_days() < 30:
+        console.print(
+            f"[dim]calibration already exists at {store.path} "
+            f"(age: {store.age_days():.1f}d). Use --refresh to re-run.[/dim]"
+        )
+        _print_calibration_summary(store)
+        return
+
+    modules = list(all_username_modules())
+    console.print(f"[bold]calibrating {len(modules)} sources against impossible handle...[/bold]")
+    entries = asyncio.run(calibrate_modules(modules))
+    store.save(entries)
+    console.print(f"[green]✓[/green] saved → {store.path}")
+    _print_calibration_summary(store)
+
+
+def _print_calibration_summary(store: CalibrationStore) -> None:
+    from rich.table import Table
+
+    entries = store.all_entries()
+    unreliable = sorted([e for e in entries.values() if not e.reliable], key=lambda e: e.source)
+    reliable = [e for e in entries.values() if e.reliable]
+    console.print(
+        f"\n[bold]calibration summary:[/bold] "
+        f"[green]{len(reliable)} reliable[/green] · "
+        f"[red]{len(unreliable)} false-positive[/red] / {len(entries)} total\n"
+    )
+    if unreliable:
+        t = Table(title="Unreliable sources (false-positive on impossible handles)", header_style="red")
+        t.add_column("Source", style="cyan")
+        t.add_column("Status returned", style="red")
+        t.add_column("Latency (ms)", justify="right")
+        for e in unreliable:
+            t.add_row(e.source, e.impossible_status, str(e.impossible_elapsed_ms))
+        console.print(t)
+        console.print(
+            "[dim]In default mode, findings from these sources will be marked [low confidence] "
+            "with a calibration_warning. Use --strict to filter them out entirely.[/dim]"
+        )
 
 
 @app.command()

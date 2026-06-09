@@ -10,7 +10,7 @@ from pathlib import Path
 from rich.console import Console
 from rich.table import Table
 
-from osint_toolkit.core.models import Report, Status
+from osint_toolkit.core.models import Confidence, Report, Status
 
 _STATUS_STYLES = {
     Status.FOUND: "[bold green]FOUND[/bold green]",
@@ -19,17 +19,32 @@ _STATUS_STYLES = {
     Status.SKIPPED: "[yellow]skipped[/yellow]",
 }
 
+# Found with low confidence = source false-positives on impossible handles
+_LOW_CONF_FOUND = "[yellow]FOUND[?][/yellow]"
+
+
+def _status_label(f) -> str:  # noqa: ANN001
+    if f.status == Status.FOUND and f.confidence == Confidence.LOW:
+        return _LOW_CONF_FOUND
+    return _STATUS_STYLES.get(f.status, str(f.status))
+
 
 def render_table(report: Report, console: Console | None = None) -> None:
     console = console or Console()
+
+    # Count high-confidence vs low-confidence FOUND
+    high_found = sum(1 for f in report.findings if f.status == Status.FOUND and f.confidence != Confidence.LOW)
+    low_found = sum(1 for f in report.findings if f.status == Status.FOUND and f.confidence == Confidence.LOW)
+
     header = (
         f"[bold]{report.target.kind.value}[/bold] = "
         f"[bold cyan]{report.target.value}[/bold cyan]  "
         f"·  mode=[magenta]{report.mode}[/magenta]  "
-        f"·  [green]{report.found_count} found[/green] / "
-        f"[dim]{report.not_found_count} not[/dim] / "
-        f"[red]{report.error_count} err[/red]"
+        f"·  [green]{high_found} FOUND[/green]"
     )
+    if low_found:
+        header += f" + [yellow]{low_found} weak[?][/yellow]"
+    header += f" / [dim]{report.not_found_count} not[/dim] / [red]{report.error_count} err[/red]"
     console.print(header)
 
     t = Table(show_header=True, header_style="bold", expand=True)
@@ -38,9 +53,19 @@ def render_table(report: Report, console: Console | None = None) -> None:
     t.add_column("URL / Detail", overflow="fold")
     t.add_column("ms", justify="right", style="dim")
 
-    # Sort: found first, then not_found, then error, alpha by source
-    order = {Status.FOUND: 0, Status.NOT_FOUND: 1, Status.SKIPPED: 2, Status.ERROR: 3}
-    findings = sorted(report.findings, key=lambda f: (order.get(f.status, 9), f.source))
+    # Sort: high-conf found first, then low-conf found, then not_found, then error
+    def sort_key(f) -> tuple[int, str]:  # noqa: ANN001
+        if f.status == Status.FOUND and f.confidence != Confidence.LOW:
+            return (0, f.source)
+        if f.status == Status.FOUND:
+            return (1, f.source)
+        if f.status == Status.NOT_FOUND:
+            return (2, f.source)
+        if f.status == Status.SKIPPED:
+            return (3, f.source)
+        return (4, f.source)
+
+    findings = sorted(report.findings, key=sort_key)
 
     for f in findings:
         detail = f.url or ""
@@ -51,6 +76,9 @@ def render_table(report: Report, console: Console | None = None) -> None:
             for k, v in f.data.items():
                 if v is None or v == [] or v == "" or k in {"site", "host"}:
                     continue
+                if k == "calibration_warning":
+                    interesting.append(f"[yellow]⚠ {v}[/yellow]")
+                    continue
                 if isinstance(v, list):
                     interesting.append(f"{k}={', '.join(str(x) for x in v[:3])}")
                 else:
@@ -59,9 +87,14 @@ def render_table(report: Report, console: Console | None = None) -> None:
                     break
             if interesting:
                 detail = (detail + "  " + " · ".join(interesting)).strip()
-        t.add_row(f.source, _STATUS_STYLES.get(f.status, str(f.status)), detail, str(f.elapsed_ms or ""))
+        t.add_row(f.source, _status_label(f), detail, str(f.elapsed_ms or ""))
 
     console.print(t)
+    if low_found:
+        console.print(
+            f"[dim italic]{low_found} weak finds[?] = source flagged by calibration "
+            f"as false-positive on impossible handles. Use --strict to hide them.[/dim italic]"
+        )
 
 
 def render_json(report: Report) -> str:

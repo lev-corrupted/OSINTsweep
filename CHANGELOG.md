@@ -4,6 +4,49 @@ All notable changes to osint-toolkit. Format loosely follows [Keep a Changelog](
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-06-08
+
+### Added — calibration system + truth in reporting
+
+- **`osint calibrate` command** (`core/calibration.py`):
+  - Runs every username source against **3 randomized impossible handles** (`zzimpossible<hex>xx` — alphanumeric to match real handle rules).
+  - Majority vote: a source is `unreliable` if it returns FOUND on ≥2 of 3 rounds. Single-shot was too flaky.
+  - Persists to `~/.osint-toolkit/calibration.json` (path override via `OSINT_CALIBRATION_PATH`).
+  - Auto-suggests `osint calibrate` on first username lookup if no calibration data exists.
+- **Confidence demotion in Dispatcher:** findings from sources flagged as unreliable get `confidence=low` + `calibration_warning` in their data dict. They're rendered as `FOUND[?]` in yellow.
+- **`--strict` flag** on `username` subcommand: filter out unreliable sources entirely (the recommended mode once calibrated).
+- **Rich output rewrite** to split high-confidence FOUND from weak FOUND[?] in the summary line + sort order + per-row coloring.
+
+### Changed — fingerprint quality pass
+
+The acrotolkanyo smoke test (a name that doesn't appear to be a real person) was reporting 25 FOUND in v0.2 — almost all false positives. v0.3 fingerprints were rewritten where possible:
+- **Twitter / X:** now use `cdn.syndication.twimg.com/timeline/profile` endpoint with JSON marker matching.
+- **Instagram / Threads:** body-marker check for `"username":"{username}"` substring.
+- **TikTok:** stricter `"uniqueId":"{username}"` substring (was just `uniqueId`).
+- **Medium:** now hits `/feed/@{username}` RSS endpoint — much more reliable than HTML page.
+- **Snapchat / Bento / Venmo / CashApp:** body markers instead of status code.
+- **Discord vanity:** now uses `/api/v10/invites/{code}` endpoint (was the public invite page).
+- **Pastebin:** status code (was URL-echo substring bug that always matched).
+- **Facebook:** removed entirely — anti-bot too aggressive for any reliable detection.
+
+For sites that can't be fingerprinted reliably (SPA-shell sites that return 200 for any URL), calibration catches them automatically. v0.3 catches 18 such sources in default calibration:
+`anilist, bandcamp, codeforces, crates_io, duolingo, ebay, hackthebox, hashnode, indiehackers, ko_fi, mixcloud, pypi, replit, snapchat, spotify_user, trello, tryhackme, wordpress`.
+
+Once calibrated, default mode shows them as `FOUND[?]` (with a ⚠ calibration_warning). `--strict` hides them.
+
+### Smoke-test improvement (truth, not vanity numbers)
+
+| | v0.2 | **v0.3 (default)** | **v0.3 (--strict)** |
+|---|---|---|---|
+| `torvalds` FOUND | 52 | **28 high-conf + 18 weak[?]** | 28 high-conf |
+| `acrotolkanyo` FOUND | 25 *(mostly false positive)* | **0 high-conf + 18 weak[?]** | **0 (correct)** |
+
+v0.3 reports 0 high-confidence finds for a person who isn't actually online. v0.2 reported 25. That's the win — honesty over the vanity number.
+
+### Tests
+
+55 passing (6 new in `test_calibration.py`). All HTTP mocked via respx, no real network in CI.
+
 ## [0.2.0] — 2026-06-08
 
 ### Added
