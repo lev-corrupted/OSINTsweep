@@ -11,9 +11,12 @@ from typing import Annotated
 import typer
 from rich.console import Console
 
+from osint_toolkit.core import audit
 from osint_toolkit.core.cache import Cache
+from osint_toolkit.core.correlator import derive_targets
 from osint_toolkit.core.dispatcher import Dispatcher
 from osint_toolkit.core.models import Report, Target, TargetKind
+from osint_toolkit.modules.domain import all_domain_modules
 from osint_toolkit.modules.email import all_email_modules
 from osint_toolkit.modules.email.hibp import HibpBreaches
 from osint_toolkit.modules.name import all_name_modules
@@ -53,11 +56,12 @@ def _modules_for(kind: TargetKind, mode: str) -> list:
         return list(all_username_modules())
     if kind == TargetKind.NAME:
         return list(all_name_modules())
+    if kind == TargetKind.DOMAIN:
+        return list(all_domain_modules())
     return []
 
 
 def _resolve_owned(email: str) -> bool:
-    """For selfcheck mode: confirm target is in ~/.osint-toolkit/owned_emails.txt."""
     p = Path.home() / ".osint-toolkit" / "owned_emails.txt"
     if not p.exists():
         return False
@@ -100,7 +104,6 @@ def _emit(report: Report, output: Output, out_file: Path | None) -> None:
 
 
 def _confirm_or_exit(target: Target, mode: str) -> None:
-    """Selfcheck-mode confirmation for non-owned emails."""
     if mode != "selfcheck" or target.kind != TargetKind.EMAIL:
         return
     if _resolve_owned(target.value):
@@ -116,22 +119,52 @@ def _confirm_or_exit(target: Target, mode: str) -> None:
         raise typer.Exit(code=1)
 
 
+def _maybe_audit(report: Report, mode: str) -> None:
+    if mode == "pentest":
+        path = audit.write(report)
+        console.print(f"[dim]audit log → {path}[/dim]")
+
+
+async def _run_with_correlation(target: Target, mode: str, auto_correlate: bool) -> list[Report]:
+    primary = await _run(target, mode)
+    reports = [primary]
+    if not auto_correlate:
+        return reports
+    for derived in derive_targets(primary):
+        if derived.kind != target.kind:
+            console.print(f"[dim]↳ correlated: {derived.kind.value} = {derived.value}[/dim]")
+            sub = await _run(derived, mode)
+            reports.append(sub)
+    return reports
+
+
+def _common(
+    target: Target,
+    mode: Mode,
+    output: Output,
+    out_file: Path | None,
+    auto_correlate: bool,
+) -> None:
+    _confirm_or_exit(target, mode.value)
+    reports = asyncio.run(_run_with_correlation(target, mode.value, auto_correlate))
+    for r in reports:
+        _emit(r, output, out_file)
+        _maybe_audit(r, mode.value)
+
+
 @app.command()
 def email(
     target: Annotated[str, typer.Argument(help="email address to look up")],
-    mode: Annotated[
-        Mode, typer.Option("--mode", "-m", help="prospect | selfcheck | pentest")
-    ] = Mode.prospect,
-    output: Annotated[Output, typer.Option("--output", "-o", help="output format")] = Output.table,
-    out_file: Annotated[
-        Path | None, typer.Option("--out", help="write to file instead of stdout")
-    ] = None,
+    mode: Annotated[Mode, typer.Option("--mode", "-m")] = Mode.prospect,
+    output: Annotated[Output, typer.Option("--output", "-o")] = Output.table,
+    out_file: Annotated[Path | None, typer.Option("--out")] = None,
+    auto_correlate: Annotated[
+        bool, typer.Option("--auto-correlate/--no-auto-correlate", help="follow leads from Gravatar etc.")
+    ] = False,
 ) -> None:
     """Lookup an email — registered sites, gravatar, MX records, (selfcheck) breach exposure."""
     t = Target(kind=TargetKind.EMAIL, value=target)
-    _confirm_or_exit(t, mode.value)
-    report = asyncio.run(_run(t, mode.value))
-    _emit(report, output, out_file)
+    _common(t, mode, output, out_file, auto_correlate)
 
 
 @app.command()
@@ -140,11 +173,11 @@ def username(
     mode: Annotated[Mode, typer.Option("--mode", "-m")] = Mode.prospect,
     output: Annotated[Output, typer.Option("--output", "-o")] = Output.table,
     out_file: Annotated[Path | None, typer.Option("--out")] = None,
+    auto_correlate: Annotated[bool, typer.Option("--auto-correlate/--no-auto-correlate")] = False,
 ) -> None:
-    """Sherlock-style enumeration across 30+ platforms."""
+    """Sherlock-style enumeration across 70+ platforms."""
     t = Target(kind=TargetKind.USERNAME, value=target)
-    report = asyncio.run(_run(t, mode.value))
-    _emit(report, output, out_file)
+    _common(t, mode, output, out_file, auto_correlate)
 
 
 @app.command()
@@ -153,14 +186,26 @@ def name(
     mode: Annotated[Mode, typer.Option("--mode", "-m")] = Mode.prospect,
     output: Annotated[Output, typer.Option("--output", "-o")] = Output.table,
     out_file: Annotated[Path | None, typer.Option("--out")] = None,
+    auto_correlate: Annotated[bool, typer.Option("--auto-correlate/--no-auto-correlate")] = False,
 ) -> None:
     """Look up a real name across public profile sources (GitHub, ...)."""
     t = Target(kind=TargetKind.NAME, value=target)
-    report = asyncio.run(_run(t, mode.value))
-    _emit(report, output, out_file)
+    _common(t, mode, output, out_file, auto_correlate)
 
 
 @app.command()
+def domain(
+    target: Annotated[str, typer.Argument(help="domain to inspect, e.g. example.com")],
+    mode: Annotated[Mode, typer.Option("--mode", "-m")] = Mode.prospect,
+    output: Annotated[Output, typer.Option("--output", "-o")] = Output.table,
+    out_file: Annotated[Path | None, typer.Option("--out")] = None,
+) -> None:
+    """Domain recon: DNS records (A/AAAA/MX/TXT/NS/SOA/CNAME/CAA) + RDAP/WHOIS."""
+    t = Target(kind=TargetKind.DOMAIN, value=target)
+    _common(t, mode, output, out_file, auto_correlate=False)
+
+
+@app.command("list-sources")
 def list_sources() -> None:
     """List all configured sources by category, mode, and host."""
     from rich.table import Table
@@ -171,7 +216,13 @@ def list_sources() -> None:
     t.add_column("Host")
     t.add_column("Modes", style="magenta")
     t.add_column("Key?", justify="center")
-    for m in [*all_email_modules(), HibpBreaches(), *all_username_modules(), *all_name_modules()]:
+    for m in [
+        *all_email_modules(),
+        HibpBreaches(),
+        *all_username_modules(),
+        *all_name_modules(),
+        *all_domain_modules(),
+    ]:
         t.add_row(
             m.category,
             m.name,
@@ -180,6 +231,7 @@ def list_sources() -> None:
             "✓" if m.requires_api_key else "",
         )
     console.print(t)
+    console.print(f"\n[bold]Total:[/bold] {t.row_count} sources")
 
 
 if __name__ == "__main__":

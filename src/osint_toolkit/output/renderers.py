@@ -59,9 +59,7 @@ def render_table(report: Report, console: Console | None = None) -> None:
                     break
             if interesting:
                 detail = (detail + "  " + " · ".join(interesting)).strip()
-        t.add_row(
-            f.source, _STATUS_STYLES.get(f.status, str(f.status)), detail, str(f.elapsed_ms or "")
-        )
+        t.add_row(f.source, _STATUS_STYLES.get(f.status, str(f.status)), detail, str(f.elapsed_ms or ""))
 
     console.print(t)
 

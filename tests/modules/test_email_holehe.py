@@ -28,9 +28,7 @@ async def test_holehe_registered() -> None:
 
     async with respx.mock:
         respx.post("https://github.com/password_reset").mock(
-            return_value=httpx.Response(
-                200, text="<html>Your password reset request was sent.</html>"
-            )
+            return_value=httpx.Response(200, text="<html>Your password reset request was sent.</html>")
         )
         async with httpx.AsyncClient() as client:
             finding = await mod.run(target, client)

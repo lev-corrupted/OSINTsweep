@@ -50,6 +50,17 @@ def _marker_match(spec: dict[str, Any] | None, body: str) -> bool:
     return False
 
 
+def _format_body(body: Any, username: str) -> Any:  # noqa: ANN401
+    """Recursively substitute {username} placeholders inside a JSON body."""
+    if isinstance(body, str):
+        return body.format(username=username)
+    if isinstance(body, list):
+        return [_format_body(v, username) for v in body]
+    if isinstance(body, dict):
+        return {k: _format_body(v, username) for k, v in body.items()}
+    return body
+
+
 class UsernameSite(BaseModule):
     def __init__(self, spec: dict[str, Any]) -> None:
         self.spec = spec
@@ -75,10 +86,20 @@ class UsernameSite(BaseModule):
         return int(self.spec.get("rate_limit_per_min", 20))
 
     async def run(self, target: Target, client: httpx.AsyncClient) -> Finding:
+        from osint_toolkit.core.http import request_with_retry
+
         url = self.spec["url"].format(username=target.value)
         method = self.spec.get("method", "GET").upper()
-        headers = self.spec.get("headers", {})
-        r = await client.request(method, url, headers=headers)
+        headers = {k: v.format(username=target.value) for k, v in self.spec.get("headers", {}).items()}
+        max_attempts = int(self.spec.get("max_attempts", 3))
+
+        kwargs: dict[str, Any] = {"headers": headers}
+        if "json_body" in self.spec:
+            kwargs["json"] = _format_body(self.spec["json_body"], target.value)
+        if "form_data" in self.spec:
+            kwargs["data"] = {k: v.format(username=target.value) for k, v in self.spec["form_data"].items()}
+
+        r = await request_with_retry(client, method, url, max_attempts=max_attempts, **kwargs)
 
         detect = self.spec.get("detect", {})
         scheme = detect.get("type")
@@ -106,16 +127,14 @@ class UsernameSite(BaseModule):
             found_when = detect.get("found_when")
             if found_when:
                 spec_subbed = {
-                    k: v.format(username=target.value) if isinstance(v, str) else v
-                    for k, v in found_when.items()
+                    k: v.format(username=target.value) if isinstance(v, str) else v for k, v in found_when.items()
                 }
                 if _marker_match(spec_subbed, body):
                     return self._found(target, url)
             not_found_when = detect.get("not_found_when")
             if not_found_when:
                 spec_subbed = {
-                    k: v.format(username=target.value) if isinstance(v, str) else v
-                    for k, v in not_found_when.items()
+                    k: v.format(username=target.value) if isinstance(v, str) else v for k, v in not_found_when.items()
                 }
                 if _marker_match(spec_subbed, body):
                     return self._not_found(target, url)

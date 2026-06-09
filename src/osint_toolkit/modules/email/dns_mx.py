@@ -51,10 +51,7 @@ class DnsMx(BaseModule):
                 confidence=Confidence.LOW,
                 error=f"{type(exc).__name__}: {exc}",
             )
-        records = [
-            {"priority": r.preference, "exchange": str(r.exchange.to_text()).rstrip(".")}
-            for r in answers
-        ]
+        records = [{"priority": r.preference, "exchange": str(r.exchange.to_text()).rstrip(".")} for r in answers]
         return Finding(
             source=self.name,
             target_value=target.value,

@@ -63,8 +63,7 @@ class GithubNameSearch(BaseModule):
             data={
                 "total_count": body.get("total_count"),
                 "matches": [
-                    {"login": i.get("login"), "url": i.get("html_url"), "score": i.get("score")}
-                    for i in items
+                    {"login": i.get("login"), "url": i.get("html_url"), "score": i.get("score")} for i in items
                 ],
             },
         )

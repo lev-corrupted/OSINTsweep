@@ -44,9 +44,7 @@ async def test_username_site_status_code_found() -> None:
     mod = UsernameSite(GITHUB_SITE)
 
     async with respx.mock:
-        respx.get("https://github.com/octocat").mock(
-            return_value=httpx.Response(200, text="<html>octocat</html>")
-        )
+        respx.get("https://github.com/octocat").mock(return_value=httpx.Response(200, text="<html>octocat</html>"))
         async with httpx.AsyncClient() as client:
             finding = await mod.run(target, client)
 
@@ -75,9 +73,7 @@ async def test_username_site_json_field_truthy_found() -> None:
 
     async with respx.mock:
         respx.get("https://www.reddit.com/user/octocat/about.json").mock(
-            return_value=httpx.Response(
-                200, json={"kind": "t2", "data": {"id": "1234", "name": "octocat"}}
-            )
+            return_value=httpx.Response(200, json={"kind": "t2", "data": {"id": "1234", "name": "octocat"}})
         )
         async with httpx.AsyncClient() as client:
             finding = await mod.run(target, client)

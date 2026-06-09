@@ -4,6 +4,43 @@ All notable changes to osint-toolkit. Format loosely follows [Keep a Changelog](
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-06-08
+
+### Added
+
+- **Domain target kind + 2 new modules:**
+  - `domain/dns_records.py` — parallel A/AAAA/MX/TXT/NS/SOA/CNAME/CAA resolution with SPF detection + summary flags.
+  - `domain/whois_lookup.py` — RDAP-based registrar/dates/nameservers/status lookup via `rdap.org` (no extra deps).
+  - New CLI subcommand: `osint domain <name> --mode <...>`.
+- **Cross-source correlator** (`core/correlator.py`):
+  - After a primary report, derives downstream `Target`s from finding data (e.g., Gravatar's `preferred_username` → automatic username pipeline run).
+  - New `--auto-correlate` flag on `email`/`username`/`name` subcommands.
+- **Pentest-mode audit log** (`core/audit.py`):
+  - In `--mode pentest`, every Report is appended to `pentest_audit_<timestamp>.jsonl`. Override path via `OSINT_AUDIT_PATH` env var.
+- **`request_with_retry` helper** in `core/http.py`: retry-on-429/5xx with exponential backoff + jitter + `Retry-After` honoring. Wired into all Sherlock-style + holehe-style modules.
+- **Hunter.io module** (`email/hunter_pattern.py`): company email-pattern lookup for custom-domain emails. Auto-skips for free providers (gmail/outlook/yahoo/icloud/hotmail/proton). Requires `HUNTER_API_KEY`.
+- **41 new username sources** for a total of **80**:
+  - Bluesky, Mastodon, Threads, Telegram, Discord vanity invites, Roblox, Chess.com, Lichess, Codeforces, LeetCode, Replit, CodePen, MyAnimeList, AniList, npm, PyPI, RubyGems, crates.io, DockerHub, ko-fi, Trello, Mixcloud, Bandcamp, Genius, Untappd, Strava, Snapchat handle, Venmo, CashApp, Spotify user, Gravatar profile, Linktr.ee, Bento, About.me, Wellfound (AngelList), Pastebin, Ghost.org, IndieHackers, Fiverr, Upwork, GitHub API.
+- **Realistic Chrome 121 User-Agent** as default — fixes "auto-blocked by Cloudflare" cases that hit v0.1.
+
+### Changed
+
+- Many Sherlock-style fingerprints rewritten for higher accuracy (Reddit, GitLab, Keybase, Steam, TikTok, Stack Overflow, HackerNews, etc. now use site-specific APIs or stronger body markers).
+- `core/http.py` default headers tightened: dropped `br` Accept-Encoding (was causing decode errors without brotli installed).
+
+### Fixed
+
+- v0.1 had 7 error cases on `torvalds` smoke test; v0.2 has 6 errors out of 80 sources (the remaining are Cloudflare-protected sites that need browser cookies — flagged for v0.3).
+- v0.1 wall-clock vs v0.2: 39 sites in ~5s → **80 sites in ~7s** (per-host concurrency cap still 4).
+
+### Smoke-test improvement (target: `torvalds`)
+
+| | v0.1.0 | **v0.2.0** | Δ |
+|---|---|---|---|
+| Sources checked | 39 | **80** | +105% |
+| FOUND | 23 | **52** | +126% |
+| Errors | 7 | **6** | -1 (despite 2× sources) |
+
 ## [0.1.0] — 2026-06-08
 
 ### Added — initial release

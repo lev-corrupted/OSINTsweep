@@ -67,8 +67,6 @@ class Gravatar(BaseModule):
                 "preferred_username": entry.get("preferredUsername"),
                 "location": entry.get("currentLocation"),
                 "about": entry.get("aboutMe"),
-                "accounts": [
-                    a.get("shortname") for a in entry.get("accounts", []) if a.get("shortname")
-                ],
+                "accounts": [a.get("shortname") for a in entry.get("accounts", []) if a.get("shortname")],
             },
         )

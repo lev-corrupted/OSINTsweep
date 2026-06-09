@@ -43,9 +43,7 @@ async def test_gravatar_not_found() -> None:
     mod = Gravatar()
 
     async with respx.mock:
-        respx.get(f"https://www.gravatar.com/{mod._hash(target.value)}.json").mock(
-            return_value=httpx.Response(404)
-        )
+        respx.get(f"https://www.gravatar.com/{mod._hash(target.value)}.json").mock(return_value=httpx.Response(404))
         async with httpx.AsyncClient() as client:
             finding = await mod.run(target, client)
 

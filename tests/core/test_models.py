@@ -116,9 +116,7 @@ class TestReport:
     def test_report_only_found(self) -> None:
         target = Target(kind=TargetKind.USERNAME, value="octocat")
         findings = [
-            Finding(
-                source="a", target_value="octocat", status=Status.FOUND, confidence=Confidence.HIGH
-            ),
+            Finding(source="a", target_value="octocat", status=Status.FOUND, confidence=Confidence.HIGH),
             Finding(
                 source="b",
                 target_value="octocat",
