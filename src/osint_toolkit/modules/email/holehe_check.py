@@ -36,6 +36,17 @@ def _match(spec: dict[str, Any] | None, body: str) -> bool:
     return False
 
 
+def _format_json_body(body: Any, email: str) -> Any:  # noqa: ANN401
+    """Recursively substitute {email} placeholders inside a JSON body."""
+    if isinstance(body, str):
+        return body.format(email=email)
+    if isinstance(body, list):
+        return [_format_json_body(v, email) for v in body]
+    if isinstance(body, dict):
+        return {k: _format_json_body(v, email) for k, v in body.items()}
+    return body
+
+
 class HolehSite(BaseModule):
     """One Holehe-style site, parameterized by spec dict."""
 
@@ -64,11 +75,21 @@ class HolehSite(BaseModule):
 
     async def run(self, target: Target, client: httpx.AsyncClient) -> Finding:
         method = self.spec.get("method", "POST").upper()
-        url = self.spec["url"]
+        # URL itself may contain {email} for GET requests
+        url = self.spec["url"].format(email=target.value)
         form = {k: v.format(email=target.value) for k, v in self.spec.get("form_data", {}).items()}
         headers = {k: v.format(email=target.value) for k, v in self.spec.get("headers", {}).items()}
+        json_body = self.spec.get("json_body")
+        if json_body is not None:
+            json_body = _format_json_body(json_body, target.value)
 
-        r = await client.request(method, url, data=form, headers=headers)
+        kwargs: dict[str, object] = {"headers": headers}
+        if form:
+            kwargs["data"] = form
+        if json_body is not None:
+            kwargs["json"] = json_body
+
+        r = await client.request(method, url, **kwargs)
         body = r.text
 
         registered = self.spec.get("registered_when")

@@ -1,47 +1,51 @@
 [
   {
-    "name": "github",
-    "host": "github.com",
-    "method": "POST",
-    "url": "https://github.com/password_reset",
-    "form_data": {"login": "{email}"},
-    "registered_when": {"contains": "If we recognize this email"},
-    "not_registered_when": {"contains": "We could not find your account"},
-    "rate_limit_per_min": 4,
-    "modes_allowed": ["selfcheck", "pentest"]
-  },
-  {
-    "name": "instagram",
-    "host": "i.instagram.com",
-    "method": "POST",
-    "url": "https://www.instagram.com/accounts/account_recovery_send_ajax/",
-    "form_data": {"email_or_username": "{email}", "recaptcha_challenge_field": ""},
-    "headers": {"X-CSRFToken": "missing", "Referer": "https://www.instagram.com/accounts/password/reset/"},
-    "registered_when": {"contains": "obfuscated_email"},
-    "not_registered_when": {"contains": "No users found"},
-    "rate_limit_per_min": 3,
-    "modes_allowed": ["selfcheck", "pentest"]
-  },
-  {
-    "name": "spotify",
-    "host": "accounts.spotify.com",
-    "method": "POST",
-    "url": "https://accounts.spotify.com/password-reset/send",
-    "form_data": {"emailOrUsername": "{email}"},
-    "registered_when": {"contains": "Reset email sent"},
-    "not_registered_when": {"contains": "Couldn't find that account"},
-    "rate_limit_per_min": 4,
-    "modes_allowed": ["selfcheck", "pentest"]
-  },
-  {
     "name": "twitter",
     "host": "api.twitter.com",
-    "method": "POST",
-    "url": "https://api.twitter.com/i/users/email_available.json",
-    "form_data": {"email": "{email}"},
+    "method": "GET",
+    "url": "https://api.twitter.com/i/users/email_available.json?email={email}",
     "registered_when": {"contains": "\"taken\":true"},
     "not_registered_when": {"contains": "\"taken\":false"},
     "rate_limit_per_min": 4,
+    "modes_allowed": ["selfcheck", "pentest"]
+  },
+  {
+    "name": "microsoft",
+    "host": "login.live.com",
+    "method": "POST",
+    "url": "https://login.live.com/GetCredentialType.srf",
+    "headers": {
+      "Content-Type": "application/json; charset=UTF-8",
+      "hpgrequestid": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+    },
+    "json_body": {
+      "username": "{email}",
+      "isOtherIdpSupported": true,
+      "checkPhones": false,
+      "isRemoteNGCSupported": true,
+      "isCookieBannerShown": false,
+      "isFidoSupported": true,
+      "originalRequest": "",
+      "country": "US",
+      "forceotclogin": false,
+      "isExternalFederationDisallowed": false,
+      "isRemoteConnectSupported": false,
+      "federationFlags": 3
+    },
+    "registered_when": {"regex": "\"IfExistsResult\":\\s*0"},
+    "not_registered_when": {"regex": "\"IfExistsResult\":\\s*1|\"ErrorHR\":\\s*\"80046703\""},
+    "rate_limit_per_min": 6,
+    "modes_allowed": ["selfcheck", "pentest"]
+  },
+  {
+    "name": "github_email",
+    "host": "api.github.com",
+    "method": "GET",
+    "url": "https://api.github.com/search/users?q={email}+in:email&per_page=5",
+    "headers": {"Accept": "application/vnd.github+json"},
+    "registered_when": {"regex": "\"total_count\":\\s*[1-9]"},
+    "not_registered_when": {"regex": "\"total_count\":\\s*0"},
+    "rate_limit_per_min": 10,
     "modes_allowed": ["selfcheck", "pentest"]
   },
   {
@@ -49,6 +53,7 @@
     "host": "gitlab.com",
     "method": "POST",
     "url": "https://gitlab.com/users/password",
+    "headers": {"X-CSRF-Token": "missing", "Referer": "https://gitlab.com/users/password/new"},
     "form_data": {"user[email]": "{email}"},
     "registered_when": {"contains": "If your email address exists in our database"},
     "not_registered_when": {"contains": "Email not found"},
@@ -56,14 +61,41 @@
     "modes_allowed": ["selfcheck", "pentest"]
   },
   {
+    "name": "spotify",
+    "host": "spclient.wg.spotify.com",
+    "method": "GET",
+    "url": "https://spclient.wg.spotify.com/signup/public/v1/account?email={email}&validate=1&birth_day=01&birth_month=01&birth_year=2000",
+    "registered_when": {"contains": "\"status\":20"},
+    "not_registered_when": {"contains": "\"status\":1"},
+    "rate_limit_per_min": 6,
+    "modes_allowed": ["selfcheck", "pentest"]
+  },
+  {
     "name": "pinterest",
     "host": "www.pinterest.com",
-    "method": "POST",
-    "url": "https://www.pinterest.com/_ngjs/resource/EmailExistsResource/get/",
-    "form_data": {"source_url": "/", "data": "{\"options\":{\"email\":\"{email}\"}}"},
+    "method": "GET",
+    "url": "https://www.pinterest.com/_ngjs/resource/EmailExistsResource/get/?source_url=%2F&data=%7B%22options%22%3A%7B%22email%22%3A%22{email}%22%7D%7D",
+    "headers": {"X-Requested-With": "XMLHttpRequest"},
     "registered_when": {"contains": "\"data\":true"},
     "not_registered_when": {"contains": "\"data\":false"},
-    "rate_limit_per_min": 4,
+    "rate_limit_per_min": 6,
+    "modes_allowed": ["selfcheck", "pentest"]
+  },
+  {
+    "name": "instagram",
+    "host": "www.instagram.com",
+    "method": "POST",
+    "url": "https://www.instagram.com/api/v1/web/accounts/web_create_ajax/attempt/",
+    "headers": {
+      "X-CSRFToken": "missing",
+      "X-Instagram-AJAX": "1",
+      "Referer": "https://www.instagram.com/accounts/emailsignup/",
+      "X-Requested-With": "XMLHttpRequest"
+    },
+    "form_data": {"email": "{email}", "username": "osint_check_zzz", "first_name": "test", "opt_into_one_tap": "false"},
+    "registered_when": {"contains": "\"email\":[\"Another account is using"},
+    "not_registered_when": {"contains": "\"email_is_taken\":false"},
+    "rate_limit_per_min": 3,
     "modes_allowed": ["selfcheck", "pentest"]
   }
 ]

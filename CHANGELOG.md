@@ -4,6 +4,30 @@ All notable changes to osint-toolkit. Format loosely follows [Keep a Changelog](
 
 ## [Unreleased]
 
+## [0.3.1] — 2026-06-08
+
+### Fixed — Holehe email-discovery modules
+
+Empirical test on a real Gmail (`test@example.com`) revealed every Holehe
+module returned "inconclusive" — all v0.1-v0.3 password-reset fingerprints
+were stale or broken. Rewrote the module + the site spec:
+
+- **Method bugs:** Twitter requires `GET` (was `POST`), URL needed `{email}` substitution.
+- **`json_body` support** in HolehSite for endpoints that expect JSON (Microsoft, etc.).
+- **New working endpoints** verified empirically:
+  - `twitter` — `api.twitter.com/i/users/email_available.json?email=...` returns `taken:true|false`.
+  - `microsoft` — `login.live.com/GetCredentialType.srf` JSON POST returns `IfExistsResult:0|1` or `ErrorHR:80046703`.
+  - `spotify` — `spclient.wg.spotify.com/signup/public/v1/account?email=...` returns `status:20` if taken, `status:1` if free.
+  - `github_email` — public search API `/search/users?q={email}+in:email` (fixed regex to allow whitespace in `"total_count": 0`).
+  - `pinterest`, `instagram`, `gitlab` — fingerprints updated; pinterest/gitlab/instagram still need CSRF token handling (v0.4).
+- **Removed `lastpass`** — endpoint returns the same default iteration count (`600000`) for any email; cannot distinguish registered from free.
+
+### Smoke result on real Gmail
+
+`test@example.com` → 2 confirmed registrations (Spotify, Twitter/X), 3 confirmed
+not-registered (Microsoft, Gravatar, GitHub public), 3 inconclusive (GitLab,
+Instagram, Pinterest — need CSRF token rotation in v0.4).
+
 ## [0.3.0] — 2026-06-08
 
 ### Added — calibration system + truth in reporting
