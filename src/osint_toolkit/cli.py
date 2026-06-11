@@ -248,8 +248,16 @@ def name(
     output: Annotated[Output, typer.Option("--output", "-o")] = Output.table,
     out_file: Annotated[Path | None, typer.Option("--out")] = None,
     auto_correlate: Annotated[bool, typer.Option("--auto-correlate/--no-auto-correlate")] = False,
+    hint: Annotated[
+        str, typer.Option("--hint", help='narrow search, e.g. --hint "bangkok dentist" or --hint "MIT physics"')
+    ] = "",
 ) -> None:
-    """Look up a real name across public profile sources (GitHub, ...)."""
+    """Look up a real name: Wikipedia + Wikidata + ORCID + CrossRef + OpenSanctions + GitHub.
+
+    Use --auto-correlate to also try name-derived username permutations across the 80-source pipeline.
+    """
+    if hint:
+        os.environ["OSINT_HINT"] = hint
     t = Target(kind=TargetKind.NAME, value=target)
     _common(t, mode, output, out_file, auto_correlate)
 

@@ -4,6 +4,47 @@ All notable changes to osint-toolkit. Format loosely follows [Keep a Changelog](
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-06-08
+
+### Added — name pipeline expansion (1 → 7 modules)
+
+Name search was 1 module (GitHub) in v0.3. v0.4 adds 6 more, plus a username
+permutator that pivots name results into the 80-source username pipeline.
+
+- **`wikipedia.py`** — full-text Wikipedia search via MediaWiki API. Returns top 5 article matches with snippets (HTML stripped) + total hit count.
+- **`wikidata.py`** — Wikidata entity search. Returns Q-ids with labels, descriptions, and direct Wikidata URLs. Includes person-filter heuristic (descriptions matching `person|scientist|engineer|doctor|...`) to surface humans over places/works.
+- **`orcid.py`** — ORCID academic-author lookup via `pub.orcid.org/v3.0/expanded-search/`. Returns ORCID iDs + affiliations. The standard ID for academic researchers worldwide.
+- **`crossref.py`** — CrossRef paper search (~140M DOI records). Returns top 5 papers with DOI, title, venue, year, co-authors. Essential for vetting academic KOLs.
+- **`opensanctions.py`** — sanctions/PEP/watchlist screening. Gated to `OPENSANCTIONS_API_KEY` (free tier at opensanctions.org/api/). For business OSINT: vet contacts before signing.
+- **`permutator.py`** — given "Vishesh Bhatia", generates `vishesh.bhatia`, `vbhatia`, `bhatia.vishesh`, `v.bhatia`, etc. (~10-15 plausible handles). Strips honorifics (Dr/Mr/Prof). Supports `--hint "bkk"` for location-suffixed variants.
+- **Correlator pivot:** the permutator's output is consumed by `core/correlator.py` — name lookup with `--auto-correlate` automatically runs the top 6 username permutations through the 80-source username pipeline.
+
+### Added — CLI `--hint` flag
+
+`osint name "Atthachai Homhuan" --hint "tilleke healthcare law"` passes the hint via `OSINT_HINT` env var to Wikipedia search (and to the permutator for location suffixes). Helps disambiguate common names — e.g., the lawyer Atthachai Homhuan from the pharmacologist Atthachai Homhuan, both Thai academics with papers on CrossRef.
+
+### Smoke verification
+
+- `Linus Torvalds` → Wikipedia 361 hits, Wikidata Q34253, GitHub 321 matches, 11 username perms. The expected gold-standard.
+- `Atthachai Homhuan` → CrossRef 60 papers (pharmacology), 14 username perms, no Wikipedia/Wikidata. Demonstrates **name disambiguation challenge**: the academic surfaced isn't the Tilleke lawyer Lev needs.
+- `Acrotol Kanyo` → all not-found. Honest empty result.
+
+### Honest framing
+
+Name OSINT is fundamentally weaker than email or username:
+- Names aren't unique (10K "John Smith" matches).
+- Most platforms don't expose "search by name" via public API.
+- Disambiguation requires hints (location, profession, employer).
+
+The v0.4 module set fits this reality:
+- **For notable people** (executives, academics, public figures): Wikipedia + Wikidata + ORCID + CrossRef.
+- **For business compliance**: OpenSanctions.
+- **For pivoting to richer signals**: permutator → username pipeline.
+
+### Tests
+
+67 passing (12 new in `test_name_modules.py`). Full HTTP mocking via respx.
+
 ## [0.3.1] — 2026-06-08
 
 ### Fixed — Holehe email-discovery modules

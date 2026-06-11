@@ -47,4 +47,9 @@ def _candidates_from_finding(f: Finding) -> list[tuple[TargetKind, str]]:
     if f.source == "gravatar_profile":
         if pu := data.get("preferred_username"):
             out.append((TargetKind.USERNAME, pu))
+    # Name → username permutations
+    if f.source == "name_permutator":
+        # Cap to top 6 to avoid 6×80=480 requests per name lookup
+        for perm in (data.get("permutations") or [])[:6]:
+            out.append((TargetKind.USERNAME, perm))
     return out
