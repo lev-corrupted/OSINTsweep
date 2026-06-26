@@ -1,81 +1,1501 @@
 [
-  {"name": "github", "host": "github.com", "url": "https://github.com/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "github_api", "host": "api.github.com", "url": "https://api.github.com/users/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "headers": {"Accept": "application/vnd.github+json"}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "gitlab", "host": "gitlab.com", "url": "https://gitlab.com/api/v4/users?username={username}", "detect": {"type": "body_marker", "found_when": {"contains": "\"username\":\"{username}\""}, "not_found_when": {"regex": "^\\[\\]$"}}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "bitbucket", "host": "bitbucket.org", "url": "https://bitbucket.org/{username}/", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "reddit", "host": "www.reddit.com", "url": "https://www.reddit.com/user/{username}/about.json", "detect": {"type": "json_field_truthy", "field": "data.id"}, "headers": {"User-Agent": "osint-toolkit/0.2 by u/anonymous-research"}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "twitch", "host": "www.twitch.tv", "url": "https://www.twitch.tv/{username}", "detect": {"type": "body_marker", "found_when": {"contains": "\"login\":\"{username}\""}, "not_found_when": {"contains": "Sorry. Unless you've got a time machine"}}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "youtube_handle", "host": "www.youtube.com", "url": "https://www.youtube.com/@{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "tiktok", "host": "www.tiktok.com", "url": "https://www.tiktok.com/@{username}", "detect": {"type": "body_marker", "found_when": {"contains": "\"uniqueId\":\"{username}\""}, "not_found_when": {"contains": "Couldn't find this account"}}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "instagram", "host": "www.instagram.com", "url": "https://www.instagram.com/{username}/", "detect": {"type": "body_marker", "found_when": {"contains": "\"username\":\"{username}\""}, "not_found_when": {"contains": "Page Not Found"}}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "threads", "host": "www.threads.net", "url": "https://www.threads.net/@{username}", "detect": {"type": "body_marker", "found_when": {"contains": "\"username\":\"{username}\""}, "not_found_when": {"contains": "Sorry, this page isn't available"}}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "twitter", "host": "cdn.syndication.twimg.com", "url": "https://cdn.syndication.twimg.com/timeline/profile?screen_name={username}", "detect": {"type": "body_marker", "found_when": {"contains": "\"screen_name\":\"{username}\""}, "not_found_when": {"regex": "\"errors\":|TimelineProfile"}}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "x", "host": "cdn.syndication.twimg.com", "url": "https://cdn.syndication.twimg.com/timeline/profile?screen_name={username}&suppress_response_codes=true", "detect": {"type": "body_marker", "found_when": {"regex": "\"screen_name\":\\s*\"(?i){username}\""}, "not_found_when": {"contains": "errors"}}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "bluesky", "host": "public.api.bsky.app", "url": "https://public.api.bsky.app/xrpc/com.atproto.identity.resolveHandle?handle={username}.bsky.social", "detect": {"type": "json_field_truthy", "field": "did"}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "mastodon_social", "host": "mastodon.social", "url": "https://mastodon.social/users/{username}.json", "detect": {"type": "json_field_truthy", "field": "id"}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "medium", "host": "medium.com", "url": "https://medium.com/feed/@{username}", "detect": {"type": "body_marker", "found_when": {"contains": "<rss"}, "not_found_when": {"contains": "Page not found"}}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "devto", "host": "dev.to", "url": "https://dev.to/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "hashnode", "host": "hashnode.com", "url": "https://hashnode.com/@{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "substack", "host": "substack.com", "url": "https://{username}.substack.com/", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "stackoverflow_user", "host": "api.stackexchange.com", "url": "https://api.stackexchange.com/2.3/users?inname={username}&site=stackoverflow", "detect": {"type": "body_marker", "found_when": {"contains": "\"display_name\""}, "not_found_when": {"regex": "\"items\":\\s*\\[\\s*\\]"}}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "hackernews", "host": "hacker-news.firebaseio.com", "url": "https://hacker-news.firebaseio.com/v0/user/{username}.json", "detect": {"type": "body_marker", "found_when": {"contains": "\"id\":\"{username}\""}, "not_found_when": {"contains": "null"}}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "lobsters", "host": "lobste.rs", "url": "https://lobste.rs/u/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "indiehackers", "host": "www.indiehackers.com", "url": "https://www.indiehackers.com/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "producthunt", "host": "www.producthunt.com", "url": "https://www.producthunt.com/@{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "keybase", "host": "keybase.io", "url": "https://keybase.io/_/api/1.0/user/lookup.json?usernames={username}&fields=basics", "detect": {"type": "body_marker", "found_when": {"contains": "\"basics\":"}, "not_found_when": {"contains": "\"status\":{\"code\":100"}}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "behance", "host": "www.behance.net", "url": "https://www.behance.net/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "dribbble", "host": "dribbble.com", "url": "https://dribbble.com/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "vimeo", "host": "vimeo.com", "url": "https://vimeo.com/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "soundcloud", "host": "soundcloud.com", "url": "https://soundcloud.com/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "lastfm", "host": "www.last.fm", "url": "https://www.last.fm/user/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "mixcloud", "host": "www.mixcloud.com", "url": "https://www.mixcloud.com/{username}/", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "bandcamp", "host": "bandcamp.com", "url": "https://{username}.bandcamp.com", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "genius", "host": "genius.com", "url": "https://genius.com/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "letterboxd", "host": "letterboxd.com", "url": "https://letterboxd.com/{username}/", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "goodreads", "host": "www.goodreads.com", "url": "https://www.goodreads.com/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "myanimelist", "host": "myanimelist.net", "url": "https://myanimelist.net/profile/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "anilist", "host": "anilist.co", "url": "https://anilist.co/user/{username}/", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "untappd", "host": "untappd.com", "url": "https://untappd.com/user/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "strava", "host": "www.strava.com", "url": "https://www.strava.com/athletes/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "steam", "host": "steamcommunity.com", "url": "https://steamcommunity.com/id/{username}/", "detect": {"type": "body_marker", "found_when": {"contains": "profile_header"}, "not_found_when": {"contains": "The specified profile could not be found"}}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "roblox", "host": "users.roblox.com", "url": "https://users.roblox.com/v1/usernames/users", "method": "POST", "headers": {"Content-Type": "application/json"}, "json_body": {"usernames": ["{username}"], "excludeBannedUsers": false}, "detect": {"type": "body_marker", "found_when": {"contains": "\"id\""}, "not_found_when": {"regex": "\"data\":\\s*\\[\\s*\\]"}}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "chess_com", "host": "api.chess.com", "url": "https://api.chess.com/pub/player/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "lichess", "host": "lichess.org", "url": "https://lichess.org/api/user/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "codeforces", "host": "codeforces.com", "url": "https://codeforces.com/profile/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 302}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "leetcode", "host": "leetcode.com", "url": "https://leetcode.com/{username}/", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "codepen", "host": "codepen.io", "url": "https://codepen.io/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "replit", "host": "replit.com", "url": "https://replit.com/@{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "tryhackme", "host": "tryhackme.com", "url": "https://tryhackme.com/p/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "rate_limit_per_min": 6, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "hackthebox", "host": "app.hackthebox.com", "url": "https://app.hackthebox.com/profile/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "patreon", "host": "www.patreon.com", "url": "https://www.patreon.com/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "kickstarter", "host": "www.kickstarter.com", "url": "https://www.kickstarter.com/profile/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "buymeacoffee", "host": "www.buymeacoffee.com", "url": "https://www.buymeacoffee.com/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "wikipedia", "host": "en.wikipedia.org", "url": "https://en.wikipedia.org/wiki/User:{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "wordpress", "host": "wordpress.com", "url": "https://{username}.wordpress.com", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "tumblr", "host": "tumblr.com", "url": "https://{username}.tumblr.com", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "ebay", "host": "www.ebay.com", "url": "https://www.ebay.com/usr/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "duolingo", "host": "www.duolingo.com", "url": "https://www.duolingo.com/profile/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "fiverr", "host": "www.fiverr.com", "url": "https://www.fiverr.com/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "upwork", "host": "www.upwork.com", "url": "https://www.upwork.com/freelancers/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "linktree", "host": "linktr.ee", "url": "https://linktr.ee/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "bento", "host": "bento.me", "url": "https://bento.me/{username}", "detect": {"type": "body_marker", "found_when": {"contains": "\"username\":\"{username}\""}, "not_found_when": {"contains": "PAGE NOT FOUND"}}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "about_me", "host": "about.me", "url": "https://about.me/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "angellist", "host": "wellfound.com", "url": "https://wellfound.com/u/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "pastebin", "host": "pastebin.com", "url": "https://pastebin.com/u/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "ghost_org", "host": "ghost.org", "url": "https://ghost.org/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "fortnite", "host": "fortnitetracker.com", "url": "https://fortnitetracker.com/profile/all/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "snapchat", "host": "www.snapchat.com", "url": "https://www.snapchat.com/add/{username}", "detect": {"type": "body_marker", "found_when": {"contains": "\"props\":"}, "not_found_when": {"contains": "Sorry! Couldn't find"}}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "telegram", "host": "t.me", "url": "https://t.me/{username}", "detect": {"type": "body_marker", "found_when": {"contains": "tgme_page_title"}, "not_found_when": {"contains": "tgme_page_icon"}}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "discord_vanity", "host": "discord.com", "url": "https://discord.com/api/v10/invites/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "venmo", "host": "account.venmo.com", "url": "https://account.venmo.com/u/{username}", "detect": {"type": "body_marker", "found_when": {"contains": "\"username\":\"{username}\""}, "not_found_when": {"contains": "Page not found"}}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "cashapp", "host": "cash.app", "url": "https://cash.app/${username}", "detect": {"type": "body_marker", "found_when": {"contains": "$cashtag"}, "not_found_when": {"contains": "Page not found"}}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "spotify_user", "host": "open.spotify.com", "url": "https://open.spotify.com/user/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "gravatar_profile", "host": "en.gravatar.com", "url": "https://en.gravatar.com/{username}.json", "detect": {"type": "json_field_truthy", "field": "entry"}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "npm", "host": "www.npmjs.com", "url": "https://www.npmjs.com/~{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "pypi", "host": "pypi.org", "url": "https://pypi.org/user/{username}/", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "rubygems", "host": "rubygems.org", "url": "https://rubygems.org/profiles/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "crates_io", "host": "crates.io", "url": "https://crates.io/users/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "dockerhub", "host": "hub.docker.com", "url": "https://hub.docker.com/u/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "ko_fi", "host": "ko-fi.com", "url": "https://ko-fi.com/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]},
-  {"name": "trello", "host": "trello.com", "url": "https://trello.com/u/{username}", "detect": {"type": "status_code", "found": 200, "not_found": 404}, "modes_allowed": ["prospect", "selfcheck", "pentest"]}
+  {
+    "name": "github",
+    "host": "github.com",
+    "url": "https://github.com/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "github_api",
+    "host": "api.github.com",
+    "url": "https://api.github.com/users/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "headers": {
+      "Accept": "application/vnd.github+json"
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "gitlab",
+    "host": "gitlab.com",
+    "url": "https://gitlab.com/api/v4/users?username={username}",
+    "detect": {
+      "type": "body_marker",
+      "found_when": {
+        "contains": "\"username\":\"{username}\""
+      },
+      "not_found_when": {
+        "regex": "^\\[\\]$"
+      }
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "bitbucket",
+    "host": "bitbucket.org",
+    "url": "https://bitbucket.org/{username}/",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "youtube_handle",
+    "host": "www.youtube.com",
+    "url": "https://www.youtube.com/@{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "bluesky",
+    "host": "public.api.bsky.app",
+    "url": "https://public.api.bsky.app/xrpc/com.atproto.identity.resolveHandle?handle={username}.bsky.social",
+    "detect": {
+      "type": "json_field_truthy",
+      "field": "did"
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "mastodon_social",
+    "host": "mastodon.social",
+    "url": "https://mastodon.social/users/{username}.json",
+    "detect": {
+      "type": "json_field_truthy",
+      "field": "id"
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "medium",
+    "host": "medium.com",
+    "url": "https://medium.com/feed/@{username}",
+    "detect": {
+      "type": "body_marker",
+      "found_when": {
+        "contains": "<rss"
+      },
+      "not_found_when": {
+        "contains": "Not Found"
+      }
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "devto",
+    "host": "dev.to",
+    "url": "https://dev.to/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "hashnode",
+    "host": "hashnode.com",
+    "url": "https://hashnode.com/@{username}",
+    "detect": {
+      "type": "body_marker",
+      "found_when": {
+        "regex": "@[^\"]+\\) \\| Hashnode"
+      },
+      "not_found_when": {
+        "regex": "User not found|404|Page not found"
+      }
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ],
+    "rate_limit_per_min": 6
+  },
+  {
+    "name": "substack",
+    "host": "substack.com",
+    "url": "https://{username}.substack.com/",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "stackoverflow_user",
+    "host": "api.stackexchange.com",
+    "url": "https://api.stackexchange.com/2.3/users?inname={username}&site=stackoverflow",
+    "detect": {
+      "type": "body_marker",
+      "found_when": {
+        "contains": "\"display_name\""
+      },
+      "not_found_when": {
+        "regex": "\"items\":\\s*\\[\\s*\\]"
+      }
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "hackernews",
+    "host": "hacker-news.firebaseio.com",
+    "url": "https://hacker-news.firebaseio.com/v0/user/{username}.json",
+    "detect": {
+      "type": "body_marker",
+      "found_when": {
+        "contains": "\"id\":\"{username}\""
+      },
+      "not_found_when": {
+        "contains": "null"
+      }
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "lobsters",
+    "host": "lobste.rs",
+    "url": "https://lobste.rs/u/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "producthunt",
+    "host": "www.producthunt.com",
+    "url": "https://www.producthunt.com/@{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "keybase",
+    "host": "keybase.io",
+    "url": "https://keybase.io/_/api/1.0/user/lookup.json?usernames={username}&fields=basics",
+    "detect": {
+      "type": "body_marker",
+      "found_when": {
+        "contains": "\"basics\":"
+      },
+      "not_found_when": {
+        "contains": "\"them\":[null]"
+      }
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "behance",
+    "host": "www.behance.net",
+    "url": "https://www.behance.net/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "dribbble",
+    "host": "dribbble.com",
+    "url": "https://dribbble.com/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "vimeo",
+    "host": "vimeo.com",
+    "url": "https://vimeo.com/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "soundcloud",
+    "host": "soundcloud.com",
+    "url": "https://soundcloud.com/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "mixcloud",
+    "host": "www.mixcloud.com",
+    "url": "https://www.mixcloud.com/{username}/",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "genius",
+    "host": "genius.com",
+    "url": "https://genius.com/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "letterboxd",
+    "host": "letterboxd.com",
+    "url": "https://letterboxd.com/{username}/",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "goodreads",
+    "host": "www.goodreads.com",
+    "url": "https://www.goodreads.com/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "myanimelist",
+    "host": "myanimelist.net",
+    "url": "https://myanimelist.net/profile/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "anilist",
+    "host": "anilist.co",
+    "url": "https://graphql.anilist.co",
+    "detect": {
+      "type": "json_field_truthy",
+      "field": "data.User"
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ],
+    "method": "POST",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "json_body": {
+      "query": "query ($name: String) { User(name: $name) { id name } }",
+      "variables": {
+        "name": "{username}"
+      }
+    },
+    "rate_limit_per_min": 10
+  },
+  {
+    "name": "untappd",
+    "host": "untappd.com",
+    "url": "https://untappd.com/user/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "strava",
+    "host": "www.strava.com",
+    "url": "https://www.strava.com/athletes/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "steam",
+    "host": "steamcommunity.com",
+    "url": "https://steamcommunity.com/id/{username}/",
+    "detect": {
+      "type": "body_marker",
+      "found_when": {
+        "contains": "profile_header"
+      },
+      "not_found_when": {
+        "contains": "The specified profile could not be found"
+      }
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "roblox",
+    "host": "users.roblox.com",
+    "url": "https://users.roblox.com/v1/usernames/users",
+    "method": "POST",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "json_body": {
+      "usernames": [
+        "{username}"
+      ],
+      "excludeBannedUsers": false
+    },
+    "detect": {
+      "type": "body_marker",
+      "found_when": {
+        "contains": "\"id\""
+      },
+      "not_found_when": {
+        "regex": "\"data\":\\s*\\[\\s*\\]"
+      }
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "chess_com",
+    "host": "api.chess.com",
+    "url": "https://api.chess.com/pub/player/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "lichess",
+    "host": "lichess.org",
+    "url": "https://lichess.org/api/user/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "leetcode",
+    "host": "leetcode.com",
+    "url": "https://leetcode.com/{username}/",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "codepen",
+    "host": "codepen.io",
+    "url": "https://codepen.io/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "tryhackme",
+    "host": "tryhackme.com",
+    "url": "https://tryhackme.com/p/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "rate_limit_per_min": 6,
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "patreon",
+    "host": "www.patreon.com",
+    "url": "https://www.patreon.com/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "kickstarter",
+    "host": "www.kickstarter.com",
+    "url": "https://www.kickstarter.com/profile/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "buymeacoffee",
+    "host": "www.buymeacoffee.com",
+    "url": "https://www.buymeacoffee.com/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "wikipedia",
+    "host": "en.wikipedia.org",
+    "url": "https://en.wikipedia.org/wiki/User:{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "duolingo",
+    "host": "www.duolingo.com",
+    "url": "https://www.duolingo.com/2017-06-30/users?username={username}",
+    "detect": {
+      "type": "body_marker",
+      "found_when": {
+        "contains": "\"users\":[{{\"id\""
+      },
+      "not_found_when": {
+        "contains": "\"users\":[]"
+      }
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "fiverr",
+    "host": "www.fiverr.com",
+    "url": "https://www.fiverr.com/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "linktree",
+    "host": "linktr.ee",
+    "url": "https://linktr.ee/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "about_me",
+    "host": "about.me",
+    "url": "https://about.me/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "pastebin",
+    "host": "pastebin.com",
+    "url": "https://pastebin.com/u/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "ghost_org",
+    "host": "ghost.org",
+    "url": "https://ghost.org/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "snapchat",
+    "host": "www.snapchat.com",
+    "url": "https://www.snapchat.com/add/{username}",
+    "detect": {
+      "type": "body_marker",
+      "found_when": {
+        "contains": "\"props\":"
+      },
+      "not_found_when": {
+        "contains": "Sorry! Couldn't find"
+      }
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "telegram",
+    "host": "t.me",
+    "url": "https://t.me/{username}",
+    "detect": {
+      "type": "body_marker",
+      "found_when": {
+        "contains": "tgme_page_title"
+      },
+      "not_found_when": {
+        "contains": "tgme_page_icon"
+      }
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "discord_vanity",
+    "host": "discord.com",
+    "url": "https://discord.com/api/v10/invites/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "spotify_user",
+    "host": "open.spotify.com",
+    "url": "https://open.spotify.com/user/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "npm",
+    "host": "www.npmjs.com",
+    "url": "https://www.npmjs.com/~{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "rubygems",
+    "host": "rubygems.org",
+    "url": "https://rubygems.org/profiles/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "dockerhub",
+    "host": "hub.docker.com",
+    "url": "https://hub.docker.com/u/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "twitch",
+    "host": "www.twitch.tv",
+    "url": "https://www.twitch.tv/{username}",
+    "detect": {
+      "type": "body_marker",
+      "found_when": {
+        "contains": " - Twitch</title>"
+      },
+      "not_found_when": {
+        "regex": "<title>Twitch</title>"
+      }
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "tumblr",
+    "host": "www.tumblr.com",
+    "url": "https://www.tumblr.com/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "imgur",
+    "host": "api.imgur.com",
+    "url": "https://api.imgur.com/account/v1/accounts/{username}?client_id=546c25a59c58ad7",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "codewars",
+    "host": "www.codewars.com",
+    "url": "https://www.codewars.com/api/v1/users/{username}",
+    "detect": {
+      "type": "json_field_truthy",
+      "field": "username"
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "hackerrank",
+    "host": "www.hackerrank.com",
+    "url": "https://www.hackerrank.com/rest/contests/master/hackers/{username}/profile",
+    "detect": {
+      "type": "json_field_truthy",
+      "field": "model"
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "exercism",
+    "host": "exercism.org",
+    "url": "https://exercism.org/profiles/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "huggingface",
+    "host": "huggingface.co",
+    "url": "https://huggingface.co/api/users/{username}/overview",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "observable",
+    "host": "observablehq.com",
+    "url": "https://api.observablehq.com/user/@{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "deviantart",
+    "host": "www.deviantart.com",
+    "url": "https://www.deviantart.com/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "flickr",
+    "host": "www.flickr.com",
+    "url": "https://www.flickr.com/people/{username}/",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "unsplash",
+    "host": "unsplash.com",
+    "url": "https://unsplash.com/@{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ],
+    "headers": {
+      "User-Agent": "osint-toolkit/0.5"
+    }
+  },
+  {
+    "name": "osu",
+    "host": "osu.ppy.sh",
+    "url": "https://osu.ppy.sh/users/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "speedrun",
+    "host": "www.speedrun.com",
+    "url": "https://www.speedrun.com/api/v1/users/{username}",
+    "detect": {
+      "type": "json_field_truthy",
+      "field": "data.id"
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "depop",
+    "host": "www.depop.com",
+    "url": "https://www.depop.com/{username}/",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "poshmark",
+    "host": "poshmark.com",
+    "url": "https://poshmark.com/closet/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "dailymotion",
+    "host": "www.dailymotion.com",
+    "url": "https://www.dailymotion.com/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "blogger",
+    "host": "blogger.com",
+    "url": "https://{username}.blogspot.com",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "instructables",
+    "host": "www.instructables.com",
+    "url": "https://www.instructables.com/member/{username}/",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "wattpad",
+    "host": "www.wattpad.com",
+    "url": "https://www.wattpad.com/user/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "disqus",
+    "host": "disqus.com",
+    "url": "https://disqus.com/by/{username}/",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "kongregate",
+    "host": "www.kongregate.com",
+    "url": "https://www.kongregate.com/accounts/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "asciinema",
+    "host": "asciinema.org",
+    "url": "https://asciinema.org/~{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "crowdin",
+    "host": "crowdin.com",
+    "url": "https://crowdin.com/profile/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "tenor",
+    "host": "tenor.com",
+    "url": "https://tenor.com/users/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "open_collective",
+    "host": "opencollective.com",
+    "url": "https://opencollective.com/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "hackster",
+    "host": "www.hackster.io",
+    "url": "https://www.hackster.io/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "thingiverse",
+    "host": "www.thingiverse.com",
+    "url": "https://www.thingiverse.com/{username}/designs",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "speakerdeck",
+    "host": "speakerdeck.com",
+    "url": "https://speakerdeck.com/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "bio_link",
+    "host": "bio.link",
+    "url": "https://bio.link/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "carrd",
+    "host": "carrd.co",
+    "url": "https://{username}.carrd.co",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "hubpages",
+    "host": "hubpages.com",
+    "url": "https://hubpages.com/@{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "itch_io",
+    "host": "itch.io",
+    "url": "https://{username}.itch.io",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "venmo",
+    "host": "account.venmo.com",
+    "url": "https://account.venmo.com/u/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "shopify",
+    "host": "myshopify.com",
+    "url": "https://{username}.myshopify.com",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "mastodon_hachyderm",
+    "host": "hachyderm.io",
+    "url": "https://hachyderm.io/users/{username}.json",
+    "detect": {
+      "type": "json_field_truthy",
+      "field": "id"
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "mastodon_infosec",
+    "host": "infosec.exchange",
+    "url": "https://infosec.exchange/users/{username}.json",
+    "detect": {
+      "type": "json_field_truthy",
+      "field": "id"
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "gravatar_api",
+    "host": "api.gravatar.com",
+    "url": "https://api.gravatar.com/v3/profiles/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "apple_music",
+    "host": "music.apple.com",
+    "url": "https://music.apple.com/profile/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "gitea",
+    "host": "gitea.com",
+    "url": "https://gitea.com/api/v1/users/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "freelancer",
+    "host": "www.freelancer.com",
+    "url": "https://www.freelancer.com/u/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "pinterest",
+    "host": "www.pinterest.com",
+    "url": "https://www.pinterest.com/{username}/",
+    "detect": {
+      "type": "body_marker",
+      "found_when": {
+        "contains": "Profile | Pinterest"
+      },
+      "not_found_when": {
+        "regex": "<title>\\s*</title>|<title>Pinterest</title>|\"code\":\\s*404|\"status\":\\s*\"failure\""
+      }
+    },
+    "rate_limit_per_min": 4,
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "notion",
+    "host": "www.notion.com",
+    "url": "https://www.notion.com/@{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "minecraft",
+    "host": "api.mojang.com",
+    "url": "https://api.mojang.com/users/profiles/minecraft/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  }
 ]

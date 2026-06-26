@@ -35,9 +35,11 @@ class WikidataSearch(BaseModule):
         return 60
 
     async def run(self, target: Target, client: httpx.AsyncClient) -> Finding:
+        from osint_toolkit.core.http import request_with_retry
+
         url = "https://www.wikidata.org/w/api.php"
-        r = await client.get(
-            url,
+        r = await request_with_retry(
+            client, "GET", url,
             params={
                 "action": "wbsearchentities",
                 "search": target.value,

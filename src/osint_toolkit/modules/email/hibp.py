@@ -51,9 +51,11 @@ class HibpBreaches(BaseModule):
                 confidence=Confidence.LOW,
                 error="HIBP_API_KEY not set",
             )
+        from osint_toolkit.core.http import request_with_retry
+
         url = f"https://haveibeenpwned.com/api/v3/breachedaccount/{target.value}"
-        r = await client.get(
-            url,
+        r = await request_with_retry(
+            client, "GET", url,
             headers={"hibp-api-key": key, "User-Agent": "osint-toolkit"},
             params={"truncateResponse": "false"},
         )

@@ -32,11 +32,13 @@ class WikipediaSearch(BaseModule):
         return 60
 
     async def run(self, target: Target, client: httpx.AsyncClient) -> Finding:
+        from osint_toolkit.core.http import request_with_retry
+
         hint = os.environ.get("OSINT_HINT", "")
         query = f"{target.value} {hint}".strip()
         url = "https://en.wikipedia.org/w/api.php"
-        r = await client.get(
-            url,
+        r = await request_with_retry(
+            client, "GET", url,
             params={
                 "action": "query",
                 "list": "search",

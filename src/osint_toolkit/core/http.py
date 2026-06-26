@@ -18,24 +18,28 @@ import httpx
 # Real-ish Chrome 121 UA — generic enough to be normal, recent enough to not look stale.
 # Override via OSINT_USER_AGENT env var for stealthier or more identifiable runs.
 DEFAULT_USER_AGENT = (
-    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
 )
 DEFAULT_FROM = "osint-toolkit@github.com (https://github.com/levtheswag/osint-toolkit)"
 
 
-def build_client(timeout_s: float = 10.0) -> httpx.AsyncClient:
+def build_client(timeout_s: float = 20.0) -> httpx.AsyncClient:
     ua = os.environ.get("OSINT_USER_AGENT", DEFAULT_USER_AGENT)
     return httpx.AsyncClient(
-        timeout=httpx.Timeout(timeout_s),
+        timeout=httpx.Timeout(timeout_s, connect=10.0),
         follow_redirects=True,
-        http2=False,  # http2 with no negotiation = some sources reject
+        http2=False,
+        limits=httpx.Limits(
+            max_connections=200,
+            max_keepalive_connections=40,
+            keepalive_expiry=30,
+        ),
         headers={
             "User-Agent": ua,
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,application/json;q=0.9,*/*;q=0.8",
             "Accept-Language": "en-US,en;q=0.5",
-            "Accept-Encoding": "gzip, deflate",
+            "Accept-Encoding": "gzip, deflate, br",
             "DNT": "1",
-            "From": DEFAULT_FROM,
         },
     )
 
@@ -45,8 +49,8 @@ async def request_with_retry(
     method: str,
     url: str,
     *,
-    max_attempts: int = 3,
-    backoff_base_s: float = 0.5,
+    max_attempts: int = 4,
+    backoff_base_s: float = 1.0,
     retry_on: tuple[int, ...] = (429, 500, 502, 503, 504),
     **kwargs: Any,
 ) -> httpx.Response:
@@ -58,7 +62,7 @@ async def request_with_retry(
     for attempt in range(max_attempts):
         try:
             r = await client.request(method, url, **kwargs)
-        except (httpx.ReadError, httpx.ConnectError, httpx.RemoteProtocolError) as exc:
+        except (httpx.ReadError, httpx.ConnectError, httpx.RemoteProtocolError, httpx.ReadTimeout, httpx.PoolTimeout) as exc:
             last_exc = exc
             r = None  # type: ignore[assignment]
         else:

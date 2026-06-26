@@ -4,10 +4,18 @@
     "host": "api.twitter.com",
     "method": "GET",
     "url": "https://api.twitter.com/i/users/email_available.json?email={email}",
-    "registered_when": {"contains": "\"taken\":true"},
-    "not_registered_when": {"contains": "\"taken\":false"},
+    "registered_when": {
+      "contains": "\"taken\":true"
+    },
+    "not_registered_when": {
+      "contains": "\"taken\":false"
+    },
     "rate_limit_per_min": 4,
-    "modes_allowed": ["selfcheck", "pentest"]
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
   },
   {
     "name": "microsoft",
@@ -15,8 +23,7 @@
     "method": "POST",
     "url": "https://login.live.com/GetCredentialType.srf",
     "headers": {
-      "Content-Type": "application/json; charset=UTF-8",
-      "hpgrequestid": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+      "Content-Type": "application/json; charset=UTF-8"
     },
     "json_body": {
       "username": "{email}",
@@ -32,54 +39,57 @@
       "isRemoteConnectSupported": false,
       "federationFlags": 3
     },
-    "registered_when": {"regex": "\"IfExistsResult\":\\s*0"},
-    "not_registered_when": {"regex": "\"IfExistsResult\":\\s*1|\"ErrorHR\":\\s*\"80046703\""},
+    "registered_when": {
+      "regex": "\"IfExistsResult\":\\s*0"
+    },
+    "not_registered_when": {
+      "regex": "\"IfExistsResult\":\\s*1|\"ErrorHR\":\\s*\"80046703\""
+    },
     "rate_limit_per_min": 6,
-    "modes_allowed": ["selfcheck", "pentest"]
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
   },
   {
     "name": "github_email",
     "host": "api.github.com",
     "method": "GET",
     "url": "https://api.github.com/search/users?q={email}+in:email&per_page=5",
-    "headers": {"Accept": "application/vnd.github+json"},
-    "registered_when": {"regex": "\"total_count\":\\s*[1-9]"},
-    "not_registered_when": {"regex": "\"total_count\":\\s*0"},
+    "headers": {
+      "Accept": "application/vnd.github+json"
+    },
+    "registered_when": {
+      "regex": "\"total_count\":\\s*[1-9]"
+    },
+    "not_registered_when": {
+      "regex": "\"total_count\":\\s*0"
+    },
     "rate_limit_per_min": 10,
-    "modes_allowed": ["selfcheck", "pentest"]
-  },
-  {
-    "name": "gitlab",
-    "host": "gitlab.com",
-    "method": "POST",
-    "url": "https://gitlab.com/users/password",
-    "headers": {"X-CSRF-Token": "missing", "Referer": "https://gitlab.com/users/password/new"},
-    "form_data": {"user[email]": "{email}"},
-    "registered_when": {"contains": "If your email address exists in our database"},
-    "not_registered_when": {"contains": "Email not found"},
-    "rate_limit_per_min": 4,
-    "modes_allowed": ["selfcheck", "pentest"]
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
   },
   {
     "name": "spotify",
     "host": "spclient.wg.spotify.com",
     "method": "GET",
     "url": "https://spclient.wg.spotify.com/signup/public/v1/account?email={email}&validate=1&birth_day=01&birth_month=01&birth_year=2000",
-    "registered_when": {"contains": "\"status\":20"},
-    "not_registered_when": {"contains": "\"status\":1"},
+    "registered_when": {
+      "contains": "\"status\":20"
+    },
+    "not_registered_when": {
+      "contains": "\"status\":1"
+    },
     "rate_limit_per_min": 6,
-    "modes_allowed": ["selfcheck", "pentest"]
-  },
-  {
-    "name": "pinterest",
-    "host": "www.pinterest.com",
-    "method": "GET",
-    "url": "https://www.pinterest.com/_ngjs/resource/EmailExistsResource/get/?source_url=%2F&data=%7B%22options%22%3A%7B%22email%22%3A%22{email}%22%7D%7D",
-    "headers": {"X-Requested-With": "XMLHttpRequest"},
-    "registered_when": {"contains": "\"data\":true"},
-    "not_registered_when": {"contains": "\"data\":false"},
-    "rate_limit_per_min": 6,
-    "modes_allowed": ["selfcheck", "pentest"]
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
   },
   {
     "name": "instagram",
@@ -92,10 +102,574 @@
       "Referer": "https://www.instagram.com/accounts/emailsignup/",
       "X-Requested-With": "XMLHttpRequest"
     },
-    "form_data": {"email": "{email}", "username": "osint_check_zzz", "first_name": "test", "opt_into_one_tap": "false"},
-    "registered_when": {"contains": "\"email\":[\"Another account is using"},
-    "not_registered_when": {"contains": "\"email_is_taken\":false"},
+    "form_data": {
+      "email": "{email}",
+      "username": "osint_check_zzz",
+      "first_name": "test",
+      "opt_into_one_tap": "false"
+    },
+    "registered_when": {
+      "regex": "email_sharing_limit|Another account is using"
+    },
+    "not_registered_when": {
+      "regex": "\"username_suggestions\":\\s*\\[\"[a-z]"
+    },
     "rate_limit_per_min": 3,
-    "modes_allowed": ["selfcheck", "pentest"]
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "wordpress_email",
+    "host": "wordpress.com",
+    "method": "GET",
+    "url": "https://public-api.wordpress.com/rest/v1.1/users/{email}/auth-options",
+    "registered_when": {
+      "regex": "\"passwordless\"|email_login_not_allowed"
+    },
+    "not_registered_when": {
+      "contains": "\"unknown_user\""
+    },
+    "rate_limit_per_min": 3,
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "firefox",
+    "host": "accounts.firefox.com",
+    "method": "POST",
+    "url": "https://api.accounts.firefox.com/v1/account/status",
+    "headers": {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+      "User-Agent": "osint-toolkit/0.5"
+    },
+    "json_body": {
+      "email": "{email}"
+    },
+    "registered_when": {
+      "contains": "\"exists\":true"
+    },
+    "not_registered_when": {
+      "contains": "\"exists\":false"
+    },
+    "rate_limit_per_min": 6,
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "duolingo_email",
+    "host": "www.duolingo.com",
+    "method": "GET",
+    "url": "https://www.duolingo.com/2017-06-30/users?email={email}",
+    "registered_when": {
+      "regex": "\"users\":\\[\\{"
+    },
+    "not_registered_when": {
+      "contains": "\"users\":[]"
+    },
+    "rate_limit_per_min": 6,
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "adobe",
+    "host": "auth.services.adobe.com",
+    "method": "POST",
+    "url": "https://auth.services.adobe.com/signin/v2/users/accounts",
+    "headers": {
+      "Content-Type": "application/json",
+      "x-ims-clientid": "adobedotcom2"
+    },
+    "json_body": {
+      "username": "{email}"
+    },
+    "registered_when": {
+      "regex": "\"type\":\\s*\"individual\""
+    },
+    "not_registered_when": {
+      "contains": "[]"
+    },
+    "rate_limit_per_min": 4,
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "chess_email",
+    "host": "www.chess.com",
+    "method": "GET",
+    "url": "https://www.chess.com/callback/email/available?email={email}",
+    "registered_when": {
+      "contains": "\"isEmailAvailable\":false"
+    },
+    "not_registered_when": {
+      "contains": "\"isEmailAvailable\":true"
+    },
+    "rate_limit_per_min": 3,
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "atlassian_email",
+    "host": "id.atlassian.com",
+    "method": "POST",
+    "url": "https://id.atlassian.com/rest/check-username",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "json_body": {
+      "username": "{email}"
+    },
+    "registered_when": {
+      "contains": "\"action\":\"no_action\""
+    },
+    "not_registered_when": {
+      "contains": "\"action\":\"signup\""
+    },
+    "rate_limit_per_min": 6,
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "devrant_email",
+    "host": "devrant.com",
+    "method": "POST",
+    "url": "https://devrant.com/api/users",
+    "headers": {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "X-Requested-With": "XMLHttpRequest",
+      "Origin": "https://devrant.com",
+      "Referer": "https://devrant.com/feed/top/month?login=1"
+    },
+    "form_data": {
+      "app": "3",
+      "type": "1",
+      "email": "{email}",
+      "username": "",
+      "password": "",
+      "guid": "",
+      "plat": "3"
+    },
+    "registered_when": {
+      "contains": "already registered to an account"
+    },
+    "not_registered_when": {
+      "contains": "You must enter a username"
+    },
+    "rate_limit_per_min": 6,
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "replit_email",
+    "host": "replit.com",
+    "method": "POST",
+    "url": "https://replit.com/data/user/exists",
+    "headers": {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+      "X-Requested-With": "XMLHttpRequest",
+      "Origin": "https://replit.com",
+      "Referer": "https://replit.com/signup"
+    },
+    "json_body": {
+      "email": "{email}"
+    },
+    "registered_when": {
+      "contains": "\"exists\":true"
+    },
+    "not_registered_when": {
+      "contains": "\"exists\":false"
+    },
+    "rate_limit_per_min": 4,
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "hubspot_email",
+    "host": "api.hubspot.com",
+    "method": "POST",
+    "url": "https://api.hubspot.com/login-api/v1/login",
+    "headers": {
+      "Content-Type": "application/json",
+      "Origin": "https://app.hubspot.com",
+      "Referer": "https://app.hubspot.com/"
+    },
+    "json_body": {
+      "email": "{email}",
+      "password": "",
+      "rememberLogin": false
+    },
+    "registered_when": {
+      "regex": "INVALID_PASSWORD|PASSWORD_DEPRECATED"
+    },
+    "not_registered_when": {
+      "contains": "INVALID_USER"
+    },
+    "rate_limit_per_min": 4,
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "freelancer_email",
+    "host": "www.freelancer.com",
+    "method": "POST",
+    "url": "https://www.freelancer.com/api/users/0.1/users/check?compact=true&new_errors=true",
+    "headers": {
+      "Content-Type": "application/json",
+      "Origin": "https://www.freelancer.com"
+    },
+    "json_body": {
+      "user": {
+        "email": "{email}"
+      }
+    },
+    "registered_when": {
+      "contains": "EMAIL_ALREADY_IN_USE"
+    },
+    "not_registered_when": {
+      "contains": "\"status\":\"success\""
+    },
+    "rate_limit_per_min": 6,
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "hackerrank_email",
+    "host": "www.hackerrank.com",
+    "method": "POST",
+    "url": "https://www.hackerrank.com/auth/valid_email",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "json_body": {
+      "email": "{email}"
+    },
+    "registered_when": {
+      "contains": "already_registered"
+    },
+    "not_registered_when": {
+      "contains": "\"status\":true"
+    },
+    "rate_limit_per_min": 6,
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "myfitnesspal_email",
+    "host": "www.myfitnesspal.com",
+    "method": "GET",
+    "url": "https://www.myfitnesspal.com/api/idm/user-exists?email={email}",
+    "headers": {
+      "Accept": "application/json"
+    },
+    "registered_when": {
+      "contains": "\"emailExists\":true"
+    },
+    "not_registered_when": {
+      "contains": "\"emailExists\":false"
+    },
+    "rate_limit_per_min": 6,
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "neocities_email",
+    "host": "neocities.org",
+    "method": "POST",
+    "url": "https://neocities.org/create_validate",
+    "headers": {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    "form_data": {
+      "field": "email",
+      "value": "{email}",
+      "is_education": "false"
+    },
+    "registered_when": {
+      "contains": "already exists"
+    },
+    "not_registered_when": {
+      "contains": "\"result\":\"ok\""
+    },
+    "rate_limit_per_min": 6,
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "notion_email",
+    "host": "www.notion.so",
+    "method": "POST",
+    "url": "https://www.notion.so/api/v3/sendTemporaryPassword",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "json_body": {
+      "email": "{email}",
+      "disableLoginLink": false,
+      "native": false,
+      "isSignup": false
+    },
+    "registered_when": {
+      "contains": "login_generic_error"
+    },
+    "not_registered_when": {
+      "contains": "signup_generic_error"
+    },
+    "rate_limit_per_min": 4,
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "disney_email",
+    "host": "registerdisney.go.com",
+    "method": "POST",
+    "url": "https://registerdisney.go.com/jgc/v8/client/ESPN-ONESITE.WEB-PROD/guest-flow?langPref=en&feature=no-password-reuse",
+    "headers": {
+      "Content-Type": "application/json",
+      "Origin": "https://cdn.registerdisney.go.com",
+      "Referer": "https://cdn.registerdisney.go.com/"
+    },
+    "json_body": {
+      "email": "{email}"
+    },
+    "registered_when": {
+      "regex": "LOGIN_FLOW|RECOVERY_FLOW"
+    },
+    "not_registered_when": {
+      "contains": "REGISTRATION_FLOW"
+    },
+    "rate_limit_per_min": 6,
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "stremio_email",
+    "host": "api.strem.io",
+    "method": "POST",
+    "url": "https://api.strem.io/api/login",
+    "headers": {
+      "Content-Type": "application/json",
+      "Origin": "https://www.stremio.com",
+      "Referer": "https://www.stremio.com/"
+    },
+    "json_body": {
+      "authKey": null,
+      "email": "{email}",
+      "password": "wrongpassword123"
+    },
+    "registered_when": {
+      "contains": "wrongPass"
+    },
+    "not_registered_when": {
+      "contains": "wrongEmail"
+    },
+    "rate_limit_per_min": 4,
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "huggingface_email",
+    "host": "huggingface.co",
+    "method": "POST",
+    "url": "https://huggingface.co/api/check-user-email",
+    "headers": {
+      "Content-Type": "application/json",
+      "Referer": "https://huggingface.co/join"
+    },
+    "json_body": {
+      "email": "{email}"
+    },
+    "registered_when": {
+      "contains": "already exists"
+    },
+    "not_registered_when": {
+      "contains": "available"
+    },
+    "rate_limit_per_min": 6,
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "nextdoor_email",
+    "host": "auth.nextdoor.com",
+    "method": "POST",
+    "url": "https://auth.nextdoor.com/v2/token",
+    "headers": {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Origin": "https://nextdoor.com",
+      "Referer": "https://nextdoor.com/"
+    },
+    "form_data": {
+      "scope": "openid",
+      "client_id": "NEXTDOOR-WEB",
+      "login_type": "basic",
+      "grant_type": "password",
+      "username": "{email}",
+      "password": "randompass"
+    },
+    "registered_when": {
+      "contains": "invalid_grant"
+    },
+    "not_registered_when": {
+      "contains": "not_found"
+    },
+    "rate_limit_per_min": 4,
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "coursera_email",
+    "host": "www.coursera.org",
+    "method": "POST",
+    "url": "https://www.coursera.org/api/userAccounts.v1?action=getLoginMethods&email={email}",
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Coursera-Application": "front-page",
+      "X-Requested-With": "XMLHttpRequest",
+      "Origin": "https://www.coursera.org"
+    },
+    "json_body": {},
+    "registered_when": {
+      "regex": "\"loginMethods\":\\s*\\[\"[a-z]"
+    },
+    "not_registered_when": {
+      "contains": "\"loginMethods\":[]"
+    },
+    "rate_limit_per_min": 4,
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "plurk_email",
+    "host": "www.plurk.com",
+    "method": "POST",
+    "url": "https://www.plurk.com/Users/isEmailFound",
+    "headers": {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "X-Requested-With": "XMLHttpRequest",
+      "Origin": "https://www.plurk.com"
+    },
+    "form_data": {
+      "email": "{email}"
+    },
+    "registered_when": {
+      "contains": "True"
+    },
+    "not_registered_when": {
+      "contains": "False"
+    },
+    "rate_limit_per_min": 6,
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "anydo_email",
+    "host": "sm-prod2.any.do",
+    "method": "POST",
+    "url": "https://sm-prod2.any.do/check_email",
+    "headers": {
+      "Content-Type": "application/json",
+      "Origin": "https://desktop.any.do"
+    },
+    "json_body": {
+      "email": "{email}"
+    },
+    "registered_when": {
+      "contains": "\"user_exists\": true"
+    },
+    "not_registered_when": {
+      "contains": "\"user_exists\": false"
+    },
+    "rate_limit_per_min": 6,
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "etsy_email",
+    "host": "www.etsy.com",
+    "method": "GET",
+    "url": "https://www.etsy.com/api/v3/ajax/public/users/by-identity-optional?identity={email}",
+    "headers": {
+      "Referer": "https://www.etsy.com/join/email",
+      "x-detected-locale": "USD|en-US|US"
+    },
+    "registered_when": {
+      "contains": "user_id"
+    },
+    "not_registered_when": {
+      "contains": "null"
+    },
+    "rate_limit_per_min": 4,
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
   }
 ]

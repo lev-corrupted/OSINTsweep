@@ -29,4 +29,7 @@ Thumbs.db
 # Tool-specific
 osint_cache.db
 *.osint_cache.db
+pentest_audit_*.jsonl
+calibration.json
 results/
+logs/

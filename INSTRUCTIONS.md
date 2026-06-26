@@ -29,20 +29,30 @@ The runtime mode is required (`--mode prospect|selfcheck|pentest`). There is no 
 ```
 src/osint_toolkit/
 ├── core/
-│   ├── models.py         # Pydantic schemas: Target, Source, Finding, Report
-│   ├── dispatcher.py     # Async fan-out: runs N modules in parallel with rate-limit + cache
+│   ├── models.py         # Pydantic schemas: Target, Finding, Report, TargetKind, Status, Confidence
+│   ├── dispatcher.py     # Async fan-out: runs N modules in parallel with rate-limit + cache + calibration
 │   ├── cache.py          # SQLite (aiosqlite) with TTL + invalidation
+│   ├── calibration.py    # False-positive detection: runs modules against impossible handles
+│   ├── correlator.py     # Auto-correlate: derive username from email prefix
 │   ├── ratelimit.py      # Per-host async semaphore + token-bucket
 │   ├── module.py         # BaseModule ABC — every source implements .run(target) -> Finding
+│   ├── audit.py          # Pentest mode audit logging
+│   ├── scan_log.py       # Persistent scan log — every run saves JSONL to logs/
 │   └── http.py           # Shared httpx.AsyncClient with retries, user-agent, timeout
 ├── modules/
-│   ├── email/            # email → ... (where registered, valid, breached, gravatar, etc.)
-│   ├── username/         # username → which platforms (data-driven from data/username_sites.json)
-│   └── name/             # name → public profiles + search-engine matches
-├── output/               # JSON, CSV, Markdown, Rich table renderers
+│   ├── email/            # 10 holehe-style sites + gravatar + dns_mx + emailrep + hunter + hibp
+│   ├── username/         # 99 sherlock-style sites (data-driven from data/username_sites.json)
+│   ├── name/             # wikipedia + wikidata + orcid + crossref + opensanctions + github
+│   └── domain/           # DNS records + WHOIS/RDAP
+├── output/
+│   ├── banner.py         # ASCII gradient banner with pyfiglet
+│   └── renderers.py      # Rich summary panel + detailed table, JSON, CSV, Markdown renderers
 ├── data/
-│   └── username_sites.json  # Sherlock-style site DB — URL templates + presence detection
-└── cli.py                # Typer entry point
+│   ├── username_sites.json  # Sherlock-style site DB — URL templates + presence detection
+│   └── holehe_sites.json    # Email registration check endpoints
+└── cli.py                # Typer CLI + InquirerPy interactive mode
+examples/
+└── rich_ui_patterns.py   # Rich library reference: panels, tables, trees, live displays
 ```
 
 ## Adding a new source module

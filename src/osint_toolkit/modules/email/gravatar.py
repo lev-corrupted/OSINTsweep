@@ -35,9 +35,11 @@ class Gravatar(BaseModule):
         return hashlib.sha256(email.strip().lower().encode("utf-8")).hexdigest()
 
     async def run(self, target: Target, client: httpx.AsyncClient) -> Finding:
+        from osint_toolkit.core.http import request_with_retry
+
         h = self._hash(target.value)
         url = f"https://www.gravatar.com/{h}.json"
-        r = await client.get(url)
+        r = await request_with_retry(client, "GET", url)
         if r.status_code == 404:
             return Finding(
                 source=self.name,

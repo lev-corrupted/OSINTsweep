@@ -1,18 +1,18 @@
 # osint-toolkit
 
-> Best-in-class OSINT for the three real use-cases — sales prospect research, personal footprint audit, and authorized security recon. Fast, async, 30+ sources at v0.1, sherlock-style + holehe-style + gravatar + HIBP (gated) + DNS MX + hunter.io pattern.
+> Async OSINT recon across 130+ sources — email registration discovery, username enumeration, name lookup, and domain intel. One command, one schema, all results. Built for prospect research, personal footprint audits, and authorized pentesting.
 
 ```bash
 # B2B prospect research mode — defaults that won't cause harm
-osint --mode prospect email founder@acme.example
-osint --mode prospect username octocat
-osint --mode prospect name "Linus Torvalds" --hint github
+osint email founder@acme.example --mode prospect
+osint username octocat --mode prospect
+osint name "Linus Torvalds" --mode prospect --hint github
 
 # Personal footprint audit — unlocks HIBP, prompts to confirm ownership
-osint --mode selfcheck email me@mydomain.example
+osint email me@mydomain.example --mode selfcheck
 
 # Authorized pentest recon — audit-logged for client reporting
-osint --mode pentest domain target.example
+osint domain target.example --mode pentest
 ```
 
 ## Why this exists
@@ -28,7 +28,7 @@ uv sync                          # installs deps incl. dev
 uv run osint --help
 ```
 
-Python 3.13+. Zero mandatory API keys — optional `HUNTER_API_KEY`, `HIBP_API_KEY`, `GITHUB_TOKEN` unlock higher-quality lookups.
+Python 3.13+. Zero mandatory API keys — optional `HUNTER_API_KEY`, `HIBP_API_KEY`, `EMAILREP_API_KEY`, `GITHUB_TOKEN` unlock higher-quality lookups.
 
 ## Three modes — gated at runtime
 
@@ -40,16 +40,28 @@ Python 3.13+. Zero mandatory API keys — optional `HUNTER_API_KEY`, `HIBP_API_K
 
 There is no default mode. The flag is required. Read [INSTRUCTIONS.md](INSTRUCTIONS.md) for the why.
 
-## Source coverage at v0.1
+## Source coverage (v0.5)
 
-| Category | Sources |
-|---|---|
-| Email — where registered | 15+ Holehe-style (Twitter, Instagram, Pinterest, Spotify, Strava, GitHub, GitLab, Reddit, Imgur, Quora, Patreon, Rumble, Vimeo, etc.) |
-| Email — metadata | Gravatar, DNS MX, Hunter.io domain pattern, HIBP (selfcheck only) |
-| Username — presence | 30+ Sherlock-style (GitHub, GitLab, Reddit, Twitter/X, Instagram, TikTok, YouTube, Steam, Twitch, Keybase, HackerNews, Lobsters, Behance, Dribbble, Medium, DEV.to, Stack Overflow, Last.fm, Letterboxd, Goodreads, Wikipedia, etc.) |
-| Name — public profiles | Google Scholar, GitHub search, ORCID, Crossref |
+| Category | Count | Sources |
+|---|---|---|
+| Email — registration check | 27 | Twitter/X, Microsoft, GitHub, Spotify, Instagram, Firefox, Duolingo, Adobe, Chess.com, Atlassian, devRant, Replit, HubSpot, Freelancer, HackerRank, MyFitnessPal, Neocities, Notion, Disney/ESPN, Stremio, HuggingFace, Nextdoor, Coursera, Plurk, Any.do, Etsy, WordPress |
+| Email — metadata | 4 | Gravatar, DNS MX, Hunter.io pattern, EmailRep, HIBP (selfcheck/pentest) |
+| Username — presence | 95 | GitHub, GitLab, Reddit, Twitter/X, YouTube, Steam, Twitch, Keybase, HackerNews, Mastodon, Bluesky, Stack Overflow, Chess.com, Lichess, LeetCode, CodeWars, HackerRank, HuggingFace, Behance, Dribbble, Medium, DEV.to, Substack, Pinterest, Snapchat, Telegram, Spotify, npm, Docker Hub, and 60+ more |
+| Name — public profiles | 7 | Wikipedia, Wikidata, ORCID, Crossref, OpenSanctions, GitHub search, username permutator |
 
-See `src/osint_toolkit/data/username_sites.json` for the full Sherlock-style site list. Add a site by appending one JSON object — no code change required.
+All sites are defined declaratively in JSON — add a source by appending one object to `holehe_sites.json` or `username_sites.json`. No code changes needed.
+
+## Known issues
+
+These are the current bugs and limitations that need fixing or help:
+
+- **Instagram** — IP-level rate limiting kicks in fast; needs proxy rotation or smarter backoff
+- **WordPress** — Aggressive throttling (`login_auth_options_throttled`), 30-min IP bans after a few queries
+- **Chess.com** — Cloudflare blocks automated requests aggressively; low success rate in concurrent scans
+- **EmailRep** — Free tier rate limit is very low; set `EMAILREP_API_KEY` for reliable results
+- **Cloudflare-protected username sites** — Some sites (Substack, CodePen, Kickstarter, Depop, etc.) intermittently return CF challenges during concurrent bursts
+- **Adobe** — Intermittent fingerprint mismatches during high-volume scans (works fine in isolation)
+- **No proxy support yet** — All requests go through the same IP, which triggers rate limits fast during repeated scans
 
 ## Architecture (60-second tour)
 
@@ -64,8 +76,10 @@ target → dispatcher → [N modules in parallel, rate-limited, cached]
 - All HTTP via one shared `httpx.AsyncClient`.
 - Per-host concurrency cap (default 4) — won't hammer a single source.
 - 24h SQLite cache — re-querying the same target is free.
-- Retries via `tenacity` with exponential backoff.
+- Retries with exponential backoff + Retry-After honor.
+- Cloudflare challenge detection with automatic retry.
 - Modules declare `modes_allowed = {"prospect", "selfcheck", "pentest"}` — dispatcher filters before running.
+- JSONL scan logging with monthly rotation for audit trails.
 
 ## Test + run
 

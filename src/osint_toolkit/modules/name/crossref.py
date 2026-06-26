@@ -30,7 +30,10 @@ class CrossrefSearch(BaseModule):
         return 50
 
     async def run(self, target: Target, client: httpx.AsyncClient) -> Finding:
-        r = await client.get(
+        from osint_toolkit.core.http import request_with_retry
+
+        r = await request_with_retry(
+            client, "GET",
             "https://api.crossref.org/works",
             params={
                 "query.author": target.value,

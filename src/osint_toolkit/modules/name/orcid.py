@@ -34,7 +34,10 @@ class OrcidSearch(BaseModule):
         given = parts[0] if parts else target.value
         family = parts[-1] if len(parts) > 1 else ""
         q = f'given-names:"{given}" AND family-name:"{family}"' if family else f'family-name:"{given}"'
-        r = await client.get(
+        from osint_toolkit.core.http import request_with_retry
+
+        r = await request_with_retry(
+            client, "GET",
             "https://pub.orcid.org/v3.0/expanded-search/",
             params={"q": q, "rows": "10"},
             headers={"Accept": "application/json"},

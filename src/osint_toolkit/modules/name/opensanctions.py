@@ -50,7 +50,10 @@ class OpenSanctionsSearch(BaseModule):
                 confidence=Confidence.LOW,
                 error="OPENSANCTIONS_API_KEY not set — free tier at opensanctions.org/api/",
             )
-        r = await client.get(
+        from osint_toolkit.core.http import request_with_retry
+
+        r = await request_with_retry(
+            client, "GET",
             "https://api.opensanctions.org/search/default",
             params={"q": target.value, "limit": "5", "fuzzy": "true"},
             headers={"Authorization": f"ApiKey {key}"},

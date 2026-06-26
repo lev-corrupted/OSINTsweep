@@ -37,7 +37,9 @@ class GithubNameSearch(BaseModule):
         if token:
             headers["Authorization"] = f"Bearer {token}"
         params = {"q": f"{target.value} in:fullname", "per_page": "5"}
-        r = await client.get("https://api.github.com/search/users", params=params, headers=headers)
+        from osint_toolkit.core.http import request_with_retry
+
+        r = await request_with_retry(client, "GET", "https://api.github.com/search/users", params=params, headers=headers)
         if r.status_code != 200:
             return Finding(
                 source=self.name,

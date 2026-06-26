@@ -21,6 +21,17 @@ def derive_targets(report: Report) -> list[Target]:
     derived: list[Target] = []
     seen: set[tuple[TargetKind, str]] = {(report.target.kind, report.target.value)}
 
+    if report.target.kind == TargetKind.EMAIL:
+        local_part = report.target.value.split("@")[0]
+        if local_part and len(local_part) >= 3:
+            key = (TargetKind.USERNAME, local_part)
+            if key not in seen:
+                try:
+                    derived.append(Target(kind=TargetKind.USERNAME, value=local_part))
+                    seen.add(key)
+                except Exception:  # noqa: BLE001
+                    pass
+
     for f in report.findings:
         for kind, value in _candidates_from_finding(f):
             key = (kind, value)

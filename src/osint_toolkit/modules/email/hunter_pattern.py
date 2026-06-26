@@ -60,8 +60,10 @@ class HunterPattern(BaseModule):
                 confidence=Confidence.HIGH,
                 error=f"{domain} is a free provider — pattern lookup not meaningful",
             )
+        from osint_toolkit.core.http import request_with_retry
+
         url = "https://api.hunter.io/v2/domain-search"
-        r = await client.get(url, params={"domain": domain, "api_key": key, "limit": 10})
+        r = await request_with_retry(client, "GET", url, params={"domain": domain, "api_key": key, "limit": 10})
         if r.status_code != 200:
             return Finding(
                 source=self.name,
