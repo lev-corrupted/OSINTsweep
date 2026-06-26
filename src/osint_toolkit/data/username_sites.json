@@ -1497,5 +1497,173 @@
       "selfcheck",
       "pentest"
     ]
+  },
+  {
+    "name": "last_fm",
+    "host": "www.last.fm",
+    "url": "https://www.last.fm/user/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ],
+    "rate_limit_per_min": 10
+  },
+  {
+    "name": "redbubble",
+    "host": "www.redbubble.com",
+    "url": "https://www.redbubble.com/people/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ],
+    "rate_limit_per_min": 6
+  },
+  {
+    "name": "furaffinity",
+    "host": "www.furaffinity.net",
+    "url": "https://www.furaffinity.net/user/{username}/",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 400
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ],
+    "rate_limit_per_min": 6
+  },
+  {
+    "name": "coderwall",
+    "host": "coderwall.com",
+    "url": "https://coderwall.com/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ],
+    "rate_limit_per_min": 10
+  },
+  {
+    "name": "9gag",
+    "host": "9gag.com",
+    "url": "https://9gag.com/u/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ],
+    "rate_limit_per_min": 6
+  },
+  {
+    "name": "justgiving",
+    "host": "www.justgiving.com",
+    "url": "https://www.justgiving.com/fundraising/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ],
+    "rate_limit_per_min": 6
+  },
+  {
+    "name": "reverbnation",
+    "host": "www.reverbnation.com",
+    "url": "https://www.reverbnation.com/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 404
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ],
+    "rate_limit_per_min": 6
+  },
+  {
+    "name": "buzzfeed",
+    "host": "www.buzzfeed.com",
+    "url": "https://www.buzzfeed.com/{username}",
+    "detect": {
+      "type": "status_code",
+      "found": 200,
+      "not_found": 406
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ],
+    "rate_limit_per_min": 6
+  },
+  {
+    "name": "bandcamp",
+    "host": "bandcamp.com",
+    "url": "https://{username}.bandcamp.com",
+    "detect": {
+      "type": "body_marker",
+      "found_when": {
+        "regex": "band_id|artist_id|track_title"
+      },
+      "not_found_when": {
+        "contains": "Signup | Bandcamp"
+      }
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ],
+    "rate_limit_per_min": 6
+  },
+  {
+    "name": "e621",
+    "host": "e621.net",
+    "url": "https://e621.net/users?search[name_matches]={username}",
+    "detect": {
+      "type": "body_marker",
+      "found_when": {
+        "contains": "Joined"
+      },
+      "not_found_when": {
+        "contains": "Nobody here but us chickens"
+      }
+    },
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ],
+    "rate_limit_per_min": 4
   }
 ]

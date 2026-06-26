@@ -671,5 +671,53 @@
       "selfcheck",
       "pentest"
     ]
+  },
+  {
+    "name": "kommo_email",
+    "host": "www.kommo.com",
+    "method": "POST",
+    "url": "https://www.kommo.com/account/check_login.php",
+    "headers": {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    "form_data": {
+      "LOGIN": "{email}"
+    },
+    "registered_when": {
+      "contains": "\"status\":\"used\""
+    },
+    "not_registered_when": {
+      "contains": "\"status\":\"free\""
+    },
+    "rate_limit_per_min": 6,
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
+  },
+  {
+    "name": "insightly_email",
+    "host": "accounts.insightly.com",
+    "method": "POST",
+    "url": "https://accounts.insightly.com/signup/isemailvalid",
+    "headers": {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    "form_data": {
+      "emailaddress": "{email}"
+    },
+    "registered_when": {
+      "contains": "An account exists for this address"
+    },
+    "not_registered_when": {
+      "contains": "true"
+    },
+    "rate_limit_per_min": 6,
+    "modes_allowed": [
+      "prospect",
+      "selfcheck",
+      "pentest"
+    ]
   }
 ]

@@ -1,6 +1,6 @@
 # OSINTsweep
 
-> Async OSINT recon across 130+ sources — email registration discovery, username enumeration, name lookup, and domain intel. One command, one schema, all results. Built for prospect research, personal footprint audits, and authorized pentesting.
+> Async OSINT recon across 145+ sources — email registration discovery, username enumeration, name lookup, and domain intel. One command, one schema, all results. Built for prospect research, personal footprint audits, and authorized pentesting.
 
 ```bash
 # B2B prospect research mode — defaults that won't cause harm
@@ -44,9 +44,9 @@ There is no default mode. The flag is required. Read [INSTRUCTIONS.md](INSTRUCTI
 
 | Category | Count | Sources |
 |---|---|---|
-| Email — registration check | 27 | Twitter/X, Microsoft, GitHub, Spotify, Instagram, Firefox, Duolingo, Adobe, Chess.com, Atlassian, devRant, Replit, HubSpot, Freelancer, HackerRank, MyFitnessPal, Neocities, Notion, Disney/ESPN, Stremio, HuggingFace, Nextdoor, Coursera, Plurk, Any.do, Etsy, WordPress |
+| Email — registration check | 29 | Twitter/X, Microsoft, GitHub, Spotify, Instagram, Firefox, Duolingo, Adobe, Chess.com, Atlassian, devRant, Replit, HubSpot, Freelancer, HackerRank, MyFitnessPal, Neocities, Notion, Disney/ESPN, Stremio, HuggingFace, Nextdoor, Coursera, Plurk, Any.do, Etsy, WordPress, Kommo, Insightly |
 | Email — metadata | 4 | Gravatar, DNS MX, Hunter.io pattern, EmailRep, HIBP (selfcheck/pentest) |
-| Username — presence | 95 | GitHub, GitLab, Reddit, Twitter/X, YouTube, Steam, Twitch, Keybase, HackerNews, Mastodon, Bluesky, Stack Overflow, Chess.com, Lichess, LeetCode, CodeWars, HackerRank, HuggingFace, Behance, Dribbble, Medium, DEV.to, Substack, Pinterest, Snapchat, Telegram, Spotify, npm, Docker Hub, and 60+ more |
+| Username — presence | 105 | GitHub, GitLab, Reddit, Twitter/X, YouTube, Steam, Twitch, Keybase, HackerNews, Mastodon, Bluesky, Stack Overflow, Chess.com, Lichess, LeetCode, CodeWars, HackerRank, HuggingFace, Behance, Dribbble, Medium, DEV.to, Substack, Pinterest, Snapchat, Telegram, Spotify, npm, Docker Hub, Last.fm, Redbubble, FurAffinity, 9GAG, BuzzFeed, Bandcamp, Reverbnation, JustGiving, e621, Coderwall, and 60+ more |
 | Name — public profiles | 7 | Wikipedia, Wikidata, ORCID, Crossref, OpenSanctions, GitHub search, username permutator |
 
 All sites are defined declaratively in JSON — add a source by appending one object to `holehe_sites.json` or `username_sites.json`. No code changes needed.

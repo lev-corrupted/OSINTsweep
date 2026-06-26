@@ -39,5 +39,5 @@ def print_banner(console: Console | None = None) -> None:
         "[yellow]v0.5.0[/yellow] [dim]|[/dim] "
         "[green]by Levtheswag[/green]"
     )
-    console.print("  [dim]Async OSINT recon across 130+ sources — email, username, name, domain[/dim]")
+    console.print("  [dim]Async OSINT recon across 145+ sources — email, username, name, domain[/dim]")
     console.print()
