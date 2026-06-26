@@ -13,6 +13,10 @@ osint email me@mydomain.example --mode selfcheck
 
 # Authorized pentest recon — audit-logged for client reporting
 osint domain target.example --mode pentest
+
+# Scan through proxies — rotate IPs to avoid rate limits
+osint email target@example.com --mode prospect --proxy-file proxies.txt
+osint username target --proxy socks5://1.2.3.4:1080 --proxy http://5.6.7.8:8080
 ```
 
 ## Why this exists
@@ -61,12 +65,38 @@ These are the current bugs and limitations that need fixing or help:
 - **EmailRep** — Free tier rate limit is very low; set `EMAILREP_API_KEY` for reliable results
 - **Cloudflare-protected username sites** — Some sites (Substack, CodePen, Kickstarter, Depop, etc.) intermittently return CF challenges during concurrent bursts
 - **Adobe** — Intermittent fingerprint mismatches during high-volume scans (works fine in isolation)
-- **No proxy support yet** — All requests go through the same IP, which triggers rate limits fast during repeated scans
+## Proxy rotation
+
+Built-in proxy rotation engine to avoid IP-level rate limits and Cloudflare blocks. Supports HTTP, HTTPS, SOCKS4, and SOCKS5 proxies.
+
+```bash
+# From a file (one proxy per line, # comments supported)
+osint email target@example.com --proxy-file proxies.txt
+
+# Inline (repeatable)
+osint username target --proxy socks5://user:pass@1.2.3.4:1080 --proxy http://5.6.7.8:8080
+
+# Via environment variable (comma-separated)
+export OSINT_PROXIES="http://1.2.3.4:8080,socks5://5.6.7.8:1080"
+osint email target@example.com
+
+# Health-check your proxies
+osint proxy-check --proxy-file proxies.txt
+```
+
+How it works:
+- Proxies are health-checked on startup (tests against httpbin.org)
+- Dead proxies are excluded automatically
+- On rate-limit (429) or Cloudflare block, the proxy is cooled down for 2 minutes and the request retries on a different proxy
+- Proxies with high error rates are deprioritized
+- Falls back to direct connection if all proxies fail
 
 ## Architecture (60-second tour)
 
 ```
 target → dispatcher → [N modules in parallel, rate-limited, cached]
+                    ↓
+              proxy manager → rotate on 429/CF block, cooldown burned IPs
                     ↓
               normalize to Finding schema
                     ↓

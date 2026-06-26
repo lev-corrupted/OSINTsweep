@@ -24,6 +24,7 @@ from osint_toolkit.core.calibration import CalibrationStore, calibrate_modules
 from osint_toolkit.core.correlator import derive_targets
 from osint_toolkit.core.dispatcher import Dispatcher
 from osint_toolkit.core.models import Finding, Report, Status, Target, TargetKind
+from osint_toolkit.core.proxy import ProxyManager
 from osint_toolkit.modules.domain import all_domain_modules
 from osint_toolkit.modules.email import all_email_modules
 from osint_toolkit.modules.email.hibp import HibpBreaches
@@ -79,7 +80,7 @@ def _resolve_owned(email: str) -> bool:
     return any(line.strip().lower() == email.lower() for line in p.read_text().splitlines())
 
 
-async def _run(target: Target, mode: str, strict: bool = False) -> Report:
+async def _run(target: Target, mode: str, strict: bool = False, proxy_manager: ProxyManager | None = None) -> Report:
     cache = Cache(
         path=Path(os.environ.get("OSINT_CACHE_PATH", "osint_cache.db")),
         ttl_hours=int(os.environ.get("OSINT_CACHE_TTL_HOURS", "24")),
@@ -140,6 +141,7 @@ async def _run(target: Target, mode: str, strict: bool = False) -> Report:
         calibration=calibration,
         strict=strict,
         on_progress=on_progress,
+        proxy_manager=proxy_manager,
     )
 
     live = Live(layout(), refresh_per_second=8, console=console)
@@ -192,17 +194,39 @@ def _maybe_audit(report: Report, mode: str) -> None:
         console.print(f"[dim]audit log → {path}[/dim]")
 
 
-async def _run_with_correlation(target: Target, mode: str, auto_correlate: bool, strict: bool) -> list[Report]:
-    primary = await _run(target, mode, strict=strict)
+async def _run_with_correlation(
+    target: Target, mode: str, auto_correlate: bool, strict: bool, proxy_manager: ProxyManager | None = None,
+) -> list[Report]:
+    primary = await _run(target, mode, strict=strict, proxy_manager=proxy_manager)
     reports = [primary]
     if not auto_correlate:
         return reports
     for derived in derive_targets(primary):
         if derived.kind != target.kind:
             console.print(f"\n[bold cyan]↳ Auto-correlate:[/bold cyan] {derived.kind.value} = [bold]{derived.value}[/bold]")
-            sub = await _run(derived, mode, strict=strict)
+            sub = await _run(derived, mode, strict=strict, proxy_manager=proxy_manager)
             reports.append(sub)
     return reports
+
+
+def _build_proxy_manager(
+    proxy_file: Path | None = None, proxy_list: list[str] | None = None,
+) -> ProxyManager | None:
+    pm = ProxyManager(proxy_urls=proxy_list or [], proxy_file=proxy_file)
+    if not pm.has_proxies:
+        return None
+    console.print(f"[bold cyan]Proxy rotation:[/bold cyan] {pm.count} proxies loaded")
+    alive = asyncio.run(pm.health_check(
+        on_result=lambda entry, ok, lat: console.print(
+            f"  {'[green]OK[/green]' if ok else '[red]DEAD[/red]'} {entry.label}"
+            + (f" ({lat:.0f}ms)" if ok else "")
+        )
+    ))
+    console.print(f"  [bold]{alive}/{pm.count} alive[/bold]\n")
+    if alive == 0:
+        console.print("[yellow]All proxies failed health check — falling back to direct connection[/yellow]\n")
+        return None
+    return pm
 
 
 def _common(
@@ -214,11 +238,14 @@ def _common(
     strict: bool = False,
     show_weak: bool = False,
     skip_banner: bool = False,
+    proxy_file: Path | None = None,
+    proxy_list: list[str] | None = None,
 ) -> None:
     _confirm_or_exit(target, mode.value)
     if not skip_banner:
         print_banner(console)
-    reports = asyncio.run(_run_with_correlation(target, mode.value, auto_correlate, strict))
+    proxy_manager = _build_proxy_manager(proxy_file, proxy_list)
+    reports = asyncio.run(_run_with_correlation(target, mode.value, auto_correlate, strict, proxy_manager=proxy_manager))
     console.print()
     for r in reports:
         _emit(r, output, out_file, show_weak=show_weak)
@@ -341,10 +368,12 @@ def email(
         bool, typer.Option("--auto-correlate/--no-auto-correlate", help="derive username from email and scan platforms")
     ] = True,
     show_weak: Annotated[bool, typer.Option("--show-weak", help="show calibration-flagged weak finds in table")] = False,
+    proxy_file: Annotated[Path | None, typer.Option("--proxy-file", help="file with proxy URLs, one per line")] = None,
+    proxy: Annotated[list[str] | None, typer.Option("--proxy", "-p", help="proxy URL (repeatable)")] = None,
 ) -> None:
     """Lookup an email — registered sites, gravatar, MX records, reputation, breach exposure."""
     t = Target(kind=TargetKind.EMAIL, value=target)
-    _common(t, mode, output, out_file, auto_correlate, show_weak=show_weak)
+    _common(t, mode, output, out_file, auto_correlate, show_weak=show_weak, proxy_file=proxy_file, proxy_list=proxy)
 
 
 @app.command()
@@ -356,10 +385,12 @@ def username(
     auto_correlate: Annotated[bool, typer.Option("--auto-correlate/--no-auto-correlate")] = False,
     strict: Annotated[bool, typer.Option("--strict", help="hide sources known to false-positive")] = False,
     show_weak: Annotated[bool, typer.Option("--show-weak", help="show calibration-flagged weak finds in table")] = False,
+    proxy_file: Annotated[Path | None, typer.Option("--proxy-file", help="file with proxy URLs, one per line")] = None,
+    proxy: Annotated[list[str] | None, typer.Option("--proxy", "-p", help="proxy URL (repeatable)")] = None,
 ) -> None:
     """Sherlock-style enumeration across 100+ platforms."""
     t = Target(kind=TargetKind.USERNAME, value=target)
-    _common(t, mode, output, out_file, auto_correlate, strict=strict, show_weak=show_weak)
+    _common(t, mode, output, out_file, auto_correlate, strict=strict, show_weak=show_weak, proxy_file=proxy_file, proxy_list=proxy)
 
 
 @app.command()
@@ -417,12 +448,14 @@ def name(
     hint: Annotated[
         str, typer.Option("--hint", help='narrow search, e.g. --hint "bangkok dentist"')
     ] = "",
+    proxy_file: Annotated[Path | None, typer.Option("--proxy-file", help="file with proxy URLs, one per line")] = None,
+    proxy: Annotated[list[str] | None, typer.Option("--proxy", "-p", help="proxy URL (repeatable)")] = None,
 ) -> None:
     """Look up a real name: Wikipedia + Wikidata + ORCID + CrossRef + OpenSanctions + GitHub."""
     if hint:
         os.environ["OSINT_HINT"] = hint
     t = Target(kind=TargetKind.NAME, value=target)
-    _common(t, mode, output, out_file, auto_correlate)
+    _common(t, mode, output, out_file, auto_correlate, proxy_file=proxy_file, proxy_list=proxy)
 
 
 @app.command()
@@ -431,10 +464,44 @@ def domain(
     mode: Annotated[Mode, typer.Option("--mode", "-m")] = Mode.prospect,
     output: Annotated[Output, typer.Option("--output", "-o")] = Output.table,
     out_file: Annotated[Path | None, typer.Option("--out")] = None,
+    proxy_file: Annotated[Path | None, typer.Option("--proxy-file", help="file with proxy URLs, one per line")] = None,
+    proxy: Annotated[list[str] | None, typer.Option("--proxy", "-p", help="proxy URL (repeatable)")] = None,
 ) -> None:
     """Domain recon: DNS records + RDAP/WHOIS."""
     t = Target(kind=TargetKind.DOMAIN, value=target)
-    _common(t, mode, output, out_file, auto_correlate=False)
+    _common(t, mode, output, out_file, auto_correlate=False, proxy_file=proxy_file, proxy_list=proxy)
+
+
+@app.command("proxy-check")
+def proxy_check(
+    proxy_file: Annotated[Path | None, typer.Option("--proxy-file", help="file with proxy URLs, one per line")] = None,
+    proxy: Annotated[list[str] | None, typer.Option("--proxy", "-p", help="proxy URL (repeatable)")] = None,
+) -> None:
+    """Health-check proxies — test connectivity, measure latency, report alive/dead status."""
+    pm = ProxyManager(proxy_urls=proxy or [], proxy_file=proxy_file)
+    if not pm.has_proxies:
+        console.print("[red]No proxies provided.[/red] Use --proxy-file or --proxy or set OSINT_PROXIES env var.")
+        raise typer.Exit(code=1)
+
+    console.print(f"[bold]Testing {pm.count} proxies...[/bold]\n")
+
+    t = Table(title="Proxy Health Check", header_style="bold")
+    t.add_column("Proxy", style="cyan")
+    t.add_column("Status", no_wrap=True)
+    t.add_column("Latency", justify="right")
+    rows: list[tuple[str, str, str]] = []
+
+    def on_result(entry, ok, latency):
+        if ok:
+            rows.append((entry.label, "[bold green]ALIVE[/bold green]", f"{latency:.0f}ms"))
+        else:
+            rows.append((entry.label, "[bold red]DEAD[/bold red]", "-"))
+
+    alive = asyncio.run(pm.health_check(on_result=on_result))
+    for row in rows:
+        t.add_row(*row)
+    console.print(t)
+    console.print(f"\n[bold]{alive}/{pm.count} proxies alive[/bold]")
 
 
 @app.command("list-sources")
