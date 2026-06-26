@@ -45,7 +45,7 @@ def _match(spec: dict[str, Any] | None, body: str) -> bool:
 def _format_json_body(body: Any, email: str) -> Any:  # noqa: ANN401
     """Recursively substitute {email} placeholders inside a JSON body."""
     if isinstance(body, str):
-        return body.format(email=email)
+        return body.replace("{email}", email)
     if isinstance(body, list):
         return [_format_json_body(v, email) for v in body]
     if isinstance(body, dict):

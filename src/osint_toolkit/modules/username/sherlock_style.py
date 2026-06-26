@@ -60,7 +60,7 @@ def _marker_match(spec: dict[str, Any] | None, body: str) -> bool:
 def _format_body(body: Any, username: str) -> Any:  # noqa: ANN401
     """Recursively substitute {username} placeholders inside a JSON body."""
     if isinstance(body, str):
-        return body.format(username=username)
+        return body.replace("{username}", username)
     if isinstance(body, list):
         return [_format_body(v, username) for v in body]
     if isinstance(body, dict):

@@ -20,7 +20,7 @@ import httpx
 DEFAULT_USER_AGENT = (
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
 )
-DEFAULT_FROM = "osint-toolkit@github.com (https://github.com/levtheswag/osint-toolkit)"
+DEFAULT_FROM = "osintsweep@github.com (https://github.com/lev-corrupted/OSINTsweep)"
 
 
 def build_client(timeout_s: float = 20.0) -> httpx.AsyncClient:
