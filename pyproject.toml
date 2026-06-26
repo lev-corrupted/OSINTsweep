@@ -5,7 +5,7 @@ description = "Best-in-class OSINT toolkit: name + email + username + domain rec
 readme = "README.md"
 requires-python = ">=3.13"
 license = { text = "MIT" }
-authors = [{ name = "Levtheswag", email = "contributor@example.com" }]
+authors = [{ name = "Levtheswag" }]
 keywords = ["osint", "intelligence", "recon", "sherlock", "holehe", "footprint"]
 classifiers = [
     "Development Status :: 3 - Alpha",
