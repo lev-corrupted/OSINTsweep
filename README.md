@@ -89,6 +89,19 @@ uv run pytest --cov              # with coverage
 uv run ruff check src tests      # lint
 ```
 
+## Credits & inspiration
+
+This project builds on the techniques and research from:
+
+- **[Holehe](https://github.com/megadose/holehe)** — email registration discovery via signup/login/password-reset endpoint fingerprinting. Our holehe-style module uses the same core idea with a declarative JSON config.
+- **[Sherlock](https://github.com/sherlock-project/sherlock)** — username enumeration across social networks. Our sherlock-style module follows the same pattern with status code, body marker, and JSON field detection.
+- **[Maigret](https://github.com/soxoj/maigret)** — advanced username checking with site-specific parsing. Inspired our metadata extraction approach.
+- **[EmailRep](https://emailrep.io/)** — email reputation API used as a module for risk scoring.
+- **[Hunter.io](https://hunter.io/)** — email pattern discovery API integrated as an optional module.
+- **[HIBP](https://haveibeenpwned.com/)** — Troy Hunt's breach database, integrated for selfcheck/pentest modes.
+- **[httpx](https://www.python-httpx.org/)** — async HTTP client powering all requests.
+- **[Rich](https://github.com/Textualize/rich)** — terminal UI rendering.
+
 ## License
 
 MIT. See LICENSE.

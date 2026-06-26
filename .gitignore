@@ -33,3 +33,4 @@ pentest_audit_*.jsonl
 calibration.json
 results/
 logs/
+email_enumeration_endpoints.md

@@ -80,7 +80,7 @@ A module without a passing test does not ship. Tests use `respx` to mock HTTP; n
 uv run osint --mode prospect email someone@clinic.com
 uv run osint --mode prospect username vishesh_bhatia
 uv run osint --mode prospect name "Vishesh Bhatia" --hint bangkok
-uv run osint --mode selfcheck email you@example.com  # HIBP unlocked, prompts confirmation
+uv run osint --mode selfcheck email you@example.com        # HIBP unlocked, prompts confirmation
 uv run osint --mode pentest domain target.example          # audit-logged
 ```
 

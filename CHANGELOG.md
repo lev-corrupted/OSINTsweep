@@ -49,7 +49,7 @@ The v0.4 module set fits this reality:
 
 ### Fixed — Holehe email-discovery modules
 
-Empirical test on a real Gmail (`test@example.com`) revealed every Holehe
+Empirical test on a real Gmail revealed every Holehe
 module returned "inconclusive" — all v0.1-v0.3 password-reset fingerprints
 were stale or broken. Rewrote the module + the site spec:
 
@@ -65,7 +65,7 @@ were stale or broken. Rewrote the module + the site spec:
 
 ### Smoke result on real Gmail
 
-`test@example.com` → 2 confirmed registrations (Spotify, Twitter/X), 3 confirmed
+Test email → 2 confirmed registrations (Spotify, Twitter/X), 3 confirmed
 not-registered (Microsoft, Gravatar, GitHub public), 3 inconclusive (GitLab,
 Instagram, Pinterest — need CSRF token rotation in v0.4).
 

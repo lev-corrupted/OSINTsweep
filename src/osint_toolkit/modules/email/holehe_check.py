@@ -182,9 +182,6 @@ class HolehSite(BaseModule):
         try:
             j = _json.loads(body)
         except (ValueError, TypeError):
-            if self.name == "lastpass_email":
-                details["email_registered"] = True
-                details["iterations"] = body.strip()
             return details
 
         if self.name == "microsoft":
