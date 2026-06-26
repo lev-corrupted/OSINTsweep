@@ -13,11 +13,11 @@ def print_banner(console: Console | None = None) -> None:
     console = console or Console()
     terminal_width = shutil.get_terminal_size((80, 20)).columns
 
-    ascii_art = pyfiglet.figlet_format("OSINTwire", font="ansi_shadow", width=terminal_width)
+    ascii_art = pyfiglet.figlet_format("OSINTsweep", font="ansi_shadow", width=terminal_width)
     lines = [line for line in ascii_art.splitlines() if line.strip()]
 
     if not lines:
-        console.print("[bold cyan]OSINTwire[/bold cyan]")
+        console.print("[bold cyan]OSINTsweep[/bold cyan]")
         return
 
     color_start = (0, 255, 200)
@@ -35,7 +35,7 @@ def print_banner(console: Console | None = None) -> None:
 
     console.print(banner, end="")
     console.print(
-        "  [bold cyan]OSINTwire[/bold cyan] [dim]|[/dim] "
+        "  [bold cyan]OSINTsweep[/bold cyan] [dim]|[/dim] "
         "[yellow]v0.5.0[/yellow] [dim]|[/dim] "
         "[green]by Levtheswag[/green]"
     )

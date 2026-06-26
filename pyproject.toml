@@ -1,12 +1,12 @@
 [project]
-name = "osintwire"
+name = "osintsweep"
 version = "0.5.0"
 description = "Async OSINT recon across 130+ sources — email registration discovery, username enumeration, name lookup, domain intel."
 readme = "README.md"
 requires-python = ">=3.13"
 license = { text = "MIT" }
 authors = [{ name = "Levtheswag" }]
-keywords = ["osint", "osintwire", "intelligence", "recon", "sherlock", "holehe", "footprint"]
+keywords = ["osint", "osintsweep", "intelligence", "recon", "sherlock", "holehe", "footprint"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Information Technology",
