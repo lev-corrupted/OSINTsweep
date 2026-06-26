@@ -1,12 +1,12 @@
 [project]
-name = "osint-toolkit"
+name = "osintwire"
 version = "0.5.0"
-description = "Best-in-class OSINT toolkit: name + email + username + domain recon across 120+ sources with async fan-out, retry-on-429, cross-source correlation, and 3-mode runtime gating."
+description = "Async OSINT recon across 130+ sources — email registration discovery, username enumeration, name lookup, domain intel."
 readme = "README.md"
 requires-python = ">=3.13"
 license = { text = "MIT" }
 authors = [{ name = "Levtheswag" }]
-keywords = ["osint", "intelligence", "recon", "sherlock", "holehe", "footprint"]
+keywords = ["osint", "osintwire", "intelligence", "recon", "sherlock", "holehe", "footprint"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Information Technology",

@@ -1,4 +1,4 @@
-# osint-toolkit
+# OSINTwire
 
 > Async OSINT recon across 130+ sources — email registration discovery, username enumeration, name lookup, and domain intel. One command, one schema, all results. Built for prospect research, personal footprint audits, and authorized pentesting.
 
@@ -17,13 +17,13 @@ osint domain target.example --mode pentest
 
 ## Why this exists
 
-Existing OSINT tools force you to chain 6 CLIs (sherlock + holehe + gravatar-check + curl + jq + grep) to answer the simplest question: *"is this email registered on Twitter, GitHub, and Strava — and is the username taken?"* osint-toolkit answers that in **one async fan-out** with **one schema** across all sources.
+Existing OSINT tools force you to chain 6 CLIs (sherlock + holehe + gravatar-check + curl + jq + grep) to answer the simplest question: *"is this email registered on Twitter, GitHub, and Strava — and is the username taken?"* OSINTwire answers that in **one async fan-out** with **one schema** across all sources.
 
 ## Install
 
 ```bash
-git clone https://github.com/levtheswag/osint-toolkit
-cd osint-toolkit
+git clone https://github.com/lev-corrupted/OSINTwire
+cd OSINTwire
 uv sync                          # installs deps incl. dev
 uv run osint --help
 ```
